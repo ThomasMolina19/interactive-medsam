@@ -287,35 +287,8 @@ The script will automatically fallback to CPU. For NVIDIA GPU, change line 12 to
 - Modify enhancement parameters (alpha, beta) in line 24
 - Adjust post-processing parameters in `refine_medical_mask()`
 
-## 🤝 Contributing
 
-Contributions are welcome! Areas for improvement:
-- Additional post-processing options
-- Multi-image batch processing
-- CLI argument support
-- Export formats (DICOM, NIfTI)
+## 👤 Authors
 
-## 📄 License
-
-[Specify your license - e.g., MIT, Apache 2.0]
-
-## 👤 Author
-
-**Thomas Molina Molina**  
-Universidad Nacional de Colombia  
-Course: Geometric Models - Semester 6
-
-## 🙏 Acknowledgments
-
-- **MedSAM Team** (Bowang Lab) for the medical imaging adaptation
-- **Meta AI Research** for the original Segment Anything Model
-- **Universidad Nacional de Colombia** - Department of [Your Department]
-- **Professor Paluzny** for project guidance
-
----
-
-## 📧 Contact
-
-For questions or issues, please open an issue on GitHub or contact [your email].
-
-**Note**: This tool is for research and educational purposes. Always validate segmentation results with medical professionals for clinical applications.
+**Thomas Molina Molina**
+**Gustavo Adolfo Perez**
