@@ -1,0 +1,30 @@
+# Core dependencies for SAM Medical Image Segmentation
+
+# Deep Learning Framework
+torch>=2.0.0
+torchvision>=0.15.0
+
+# Segment Anything Model
+segment-anything>=1.0
+
+# Image Processing
+numpy>=1.24.0
+Pillow>=9.5.0
+opencv-python>=4.8.0
+scikit-image>=0.21.0
+scipy>=1.10.0
+
+# Visualization
+matplotlib>=3.7.0
+
+# Optional: For better performance on Apple Silicon
+# Uncomment if using MPS (Metal Performance Shaders)
+# torch-mps-backend
+
+# Optional: For CUDA support (Linux/Windows with NVIDIA GPU)
+# torch with CUDA can be installed via:
+# pip install torch torchvision --index-url https://download.pytorch.org/whl/cu118
+
+# Development tools (optional)
+# jupyter>=1.0.0
+# ipython>=8.12.0
