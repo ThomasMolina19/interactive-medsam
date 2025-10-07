@@ -19,18 +19,51 @@ Interactive medical image segmentation tool using MedSAM (Medical Segment Anythi
 
 ## 📦 Installation
 
-### Step 1: Clone the repository
+### Step 0: Create and activate a virtual environment (recommended)
+
+Using a virtual environment isolates project dependencies and prevents conflicts with system packages. Execute all subsequent commands with the environment activated.
+
+#### macOS / Linux
+
 ```bash
-git clone https://github.com/yourusername/interactive-medsam.git
+# From the repo root
+python3 -m venv .venv
+
+# Activate the environment
+source .venv/bin/activate
+
+# (Optional) Update pip
+python -m pip install --upgrade pip
+```
+
+#### Windows
+
+```cmd
+# From the repo root
+python -m venv .venv
+
+# Activate the environment
+.venv\Scripts\activate
+
+# (Optional) Update pip
+python -m pip install --upgrade pip
+```
+
+### Step 1: Clone the repository
+
+```bash
+git clone https://github.com/ThomasMolina19/interactive-medsam.git
 cd interactive-medsam
 ```
 
 ### Step 2: Install dependencies
+
 ```bash
 pip install -r requirements.txt
 ```
 
 ### Step 3: Install Segment Anything
+
 ```bash
 pip install git+https://github.com/facebookresearch/segment-anything.git
 ```
@@ -41,28 +74,19 @@ Download the pre-trained MedSAM model checkpoint (~2.4 GB):
 
 #### **Option 1: Direct Download from Official Sources**
 
-1. **Visit the MedSAM repository:**
-   - Go to [MedSAM GitHub](https://github.com/bowang-lab/MedSAM)
-   - Navigate to the "Model Checkpoints" section in the README
-
-2. **Download the checkpoint:**
+1. Visit the [MedSAM GitHub](https://github.com/bowang-lab/MedSAM)
+2. Navigate to the "Model Checkpoints" section in the README
+3. Download from one of these sources:
    - **Google Drive**: [Download medsam_vit_b.pth](https://drive.google.com/drive/folders/1ETWmi4AiniJeWOt6HAsYgTjYv_fkgzoN)
    - **Hugging Face**: [MedSAM Models](https://huggingface.co/wanglab/medsam)
-   - Alternative mirrors may be available in the MedSAM repository
 
-3. **Create checkpoints directory:**
+4. Create checkpoints directory and move the file:
    ```bash
    mkdir -p checkpoints
-   ```
-
-4. **Move the downloaded file:**
-   ```bash
    mv ~/Downloads/medsam_vit_b.pth checkpoints/
    ```
 
 #### **Option 2: Using gdown (Google Drive CLI)**
-
-If the checkpoint is on Google Drive, you can use `gdown`:
 
 ```bash
 # Install gdown
@@ -71,43 +95,23 @@ pip install gdown
 # Create checkpoints directory
 mkdir -p checkpoints
 
-# Download from Google Drive (replace FILE_ID with actual ID)
-gdown --id 1UAmWL88roYR7wKlnApw5Bcuzf2iQgk6_-O checkpoints/medsam_vit_b.pth
-
-# Or use the full URL method
-gdown "https://drive.google.com/uc?id=FILE_ID" -O checkpoints/medsam_vit_b.pth
+# Download from Google Drive (check MedSAM repo for current file ID)
+gdown --id 1UAmWL88roYR7wKlnApw5Bcuzf2iQgk6_ -O checkpoints/medsam_vit_b.pth
 ```
 
 **Note:** The Google Drive file ID may change. Check the [MedSAM repository](https://github.com/bowang-lab/MedSAM) for the current download link.
 
-#### **Option 3: Using wget (if direct link available)**
-
-```bash
-mkdir -p checkpoints
-cd checkpoints
-
-# If a direct download link is provided
-wget https://[direct-link-to-checkpoint]/medsam_vit_b.pth
-
-cd ..
-```
-
-#### **Option 4: Using Hugging Face Hub**
+#### **Option 3: Using Hugging Face Hub**
 
 ```bash
 # Install huggingface_hub
 pip install huggingface_hub
 
 # Download using Python
-python -c "
-from huggingface_hub import hf_hub_download
-hf_hub_download(repo_id='wanglab/medsam', filename='medsam_vit_b.pth', local_dir='checkpoints/')
-"
+python -c "from huggingface_hub import hf_hub_download; hf_hub_download(repo_id='wanglab/medsam', filename='medsam_vit_b.pth', local_dir='checkpoints/')"
 ```
 
 #### **Verify the download:**
-
-After downloading, verify the checkpoint file:
 
 ```bash
 # Check file exists and size (~2.4 GB)
@@ -117,7 +121,7 @@ ls -lh checkpoints/medsam_vit_b.pth
 # -rw-r--r--  1 user  staff   2.4G  Oct  3 10:30 checkpoints/medsam_vit_b.pth
 ```
 
-#### **Expected checkpoint path structure:**
+**Expected checkpoint path structure:**
 ```
 interactive-medsam/
 ├── checkpoints/
@@ -127,7 +131,7 @@ interactive-medsam/
 └── README.md
 ```
 
-⚠️ **Important Notes:**
+**Important Notes:**
 - The checkpoint file is large (~2.4 GB), ensure you have sufficient disk space
 - Download may take several minutes depending on your internet connection
 - Always download from official sources to ensure model integrity
@@ -212,13 +216,13 @@ The tool provides comprehensive visualization:
 
 The script automatically detects and uses the best available device:
 
-- ✅ **MPS** (Apple Silicon M1/M2/M3): Automatic detection
-- ✅ **CUDA** (NVIDIA GPU): Modify line 12: `device = "cuda"`
-- ✅ **CPU**: Automatic fallback
+- **MPS** (Apple Silicon M1/M2/M3): Automatic detection
+- **CUDA** (NVIDIA GPU): Change line 12 to `device = "cuda"`
+- **CPU**: Automatic fallback
 
 ## 💾 Saving Results
 
-To save the segmentation mask, uncomment lines at the end of the script:
+To save the segmentation mask, uncomment these lines at the end of the script:
 
 ```python
 refined_mask_pil = Image.fromarray((refined_mask * 255).astype(np.uint8))
@@ -274,7 +278,10 @@ Post-processing pipeline for mask refinement.
 ## 🐛 Troubleshooting
 
 ### "No module named 'segment_anything'"
-Install SAM: `pip install git+https://github.com/facebookresearch/segment-anything.git`
+Install SAM:
+```bash
+pip install git+https://github.com/facebookresearch/segment-anything.git
+```
 
 ### "Checkpoint not found"
 Verify the checkpoint path in line 13 matches your downloaded file location.
@@ -287,8 +294,8 @@ The script will automatically fallback to CPU. For NVIDIA GPU, change line 12 to
 - Modify enhancement parameters (alpha, beta) in line 24
 - Adjust post-processing parameters in `refine_medical_mask()`
 
-
 ## 👤 Authors
 
 **Thomas Molina Molina**
-**Gustavo Adolfo Perez**
+
+**Gustavo Adolfo Pérez**

@@ -1,6 +1,5 @@
 import sys
-sys.path.append('/Users/thomasmolinamolina/Downloads/UNAL/MATERIAS/SEMESTRE 6/PALUZNY/Project/geometric_project_unal/segment-anything')
-
+sys.path.append('path/to/segment-anything')
 import numpy as np
 from PIL import Image
 import matplotlib.pyplot as plt
@@ -13,8 +12,11 @@ from matplotlib.patches import Rectangle
 import matplotlib.patches as patches
 from matplotlib.widgets import RectangleSelector
 
+
 device = "mps" if torch.backends.mps.is_available() else "cpu"
-ckpt = "/Users/thomasmolinamolina/medsam_checkpoints/medsam_vit_b.pth"
+
+# Line 20: Update checkpoint path
+ckpt = "checkpoints/medsam_vit_b.pth"
 
 # Load model
 sam = sam_model_registry["vit_b"]()
@@ -24,8 +26,8 @@ sam = sam.to(device)
 
 predictor = SamPredictor(sam)
 
-# Load and preprocess image
-img = np.array(Image.open("/Users/thomasmolinamolina/Downloads/UNAL/MATERIAS/SEMESTRE 6/PALUZNY/Project/geometric_project_unal/assignment_4/Sam/dicom_pngs/I06.png").convert("RGB"))
+# Line 31: Update your image path
+img = np.array(Image.open("path/to/your/medical/image.png").convert("RGB"))
 
 # Enhance contrast for medical images
 img_enhanced = cv2.convertScaleAbs(img, alpha=1.2, beta=10)
