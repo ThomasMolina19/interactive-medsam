@@ -139,9 +139,11 @@ interactive-medsam/
 
 ## 🚀 Usage
 
-### Step 1: Update file paths
+### Single Image Segmentation
 
-Edit the script `segment_medical_image.py` and update:
+#### Step 1: Update file paths
+
+Edit the script `segment_one.py` and update:
 
 ```python
 # Line 6: Update the SAM repository path (if needed)
@@ -154,19 +156,114 @@ ckpt = "checkpoints/medsam_vit_b.pth"
 img = np.array(Image.open("path/to/your/medical/image.png").convert("RGB"))
 ```
 
-### Step 2: Run the segmentation tool
+#### Step 2: Run the segmentation tool
 
 ```bash
-python segment_medical_image.py
+python segment_one.py
 ```
 
-### Step 3: Interactive segmentation
+#### Step 3: Interactive segmentation
 
 1. **Select Region**: A window will open showing your medical image
 2. **Draw Bounding Box**: Click and drag to create a box around your region of interest
 3. **Adjust**: Drag the edges to resize or adjust the box
 4. **Confirm**: Close the window when satisfied with the selection
 5. **Results**: View the segmentation results in the output visualization
+
+### Batch Processing (Multiple Images)
+
+For processing multiple medical images in a folder:
+
+#### Step 1: Prepare your images
+
+Place all medical images (PNG format) in a folder, for example:
+```
+dicom_pngs/
+├── I01.png
+├── I02.png
+├── I03.png
+└── ...
+```
+
+#### Step 2: Update file paths
+
+Edit the script `segment_multiple.py` and update:
+
+```python
+# Line 13: Update checkpoint path
+ckpt = "checkpoints/medsam_vit_b.pth"
+
+# Line 111: Update input folder path
+input_folder = "path/to/your/dicom_pngs"
+
+# Line 112: Update output folder path
+output_folder = "path/to/segmentation_results"
+```
+
+#### Step 3: Choose processing mode
+
+The script supports two modes:
+
+**Mode 1: Fixed Bounding Box (Default)**
+- Uses the same bounding box for all images
+- Faster processing
+- Ideal for aligned/registered images
+
+```python
+# In segment_multiple.py, line 116
+use_interactive = False
+fixed_box = [150, 200, 450, 500]  # [x_min, y_min, x_max, y_max]
+```
+
+**Mode 2: Interactive Box Selection**
+- Select bounding box for each image
+- More flexible but slower
+- Better for varying anatomies
+
+```python
+# In segment_multiple.py, line 116
+use_interactive = True
+```
+
+#### Step 4: Run batch processing
+
+```bash
+python segment_multiple.py
+```
+
+#### Step 5: Monitor progress
+
+The script will display progress for each image:
+```
+Processing image 1/50: I01.png
+✅ Successfully processed I01.png
+Processing image 2/50: I02.png
+✅ Successfully processed I02.png
+...
+```
+
+#### Step 6: View results
+
+Results are saved in the output folder with the structure:
+```
+segmentation_results/
+├── I01_segmentation.png          # Visualization
+├── I01_mask.png                   # Binary mask
+├── I02_segmentation.png
+├── I02_mask.png
+└── ...
+```
+
+#### Batch Processing Summary
+
+After completion, you'll see statistics:
+```
+📊 Batch Processing Summary:
+✅ Successfully processed: 48/50 images
+❌ Failed: 2 images
+⏱️  Total time: 5m 23s
+⚡ Average time per image: 6.5s
+```
 
 ## 📊 Output
 
@@ -236,7 +333,15 @@ print("💾 Mask saved as 'segmentation_result.png'")
 interactive-medsam/
 ├── checkpoints/
 │   └── medsam_vit_b.pth          # MedSAM model checkpoint
-├── segment_medical_image.py       # Main segmentation script
+├── dicom_pngs/                    # Input images folder
+│   ├── I01.png
+│   └── ...
+├── segmentation_results/          # Output folder (batch processing)
+│   ├── I01_segmentation.png
+│   ├── I01_mask.png
+│   └── ...
+├── segment_one.py                 # Single image segmentation
+├── segment_multiple.py            # Batch processing script
 ├── requirements.txt               # Python dependencies
 ├── README.md                      # This file
 └── examples/                      # (Optional) Example images
@@ -295,6 +400,7 @@ The script will automatically fallback to CPU. For NVIDIA GPU, change line 12 to
 - Adjust post-processing parameters in `refine_medical_mask()`
 
 ## 👤 Authors
+ 
 
 **Thomas Molina Molina**
 
