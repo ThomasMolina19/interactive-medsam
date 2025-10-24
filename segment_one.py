@@ -15,7 +15,7 @@ from matplotlib.widgets import RectangleSelector
 
 device = "mps" if torch.backends.mps.is_available() else "cpu"
 
-# Line 20: Update checkpoint path
+# Here goes the path to your MedSAM model checkpoint
 ckpt = "checkpoints/medsam_vit_b.pth"
 
 # Load model
@@ -26,7 +26,7 @@ sam = sam.to(device)
 
 predictor = SamPredictor(sam)
 
-# Line 31: Update your image path
+# Line 31: Here goes the path to your medical image
 img = np.array(Image.open("path/to/your/medical/image.png").convert("RGB"))
 
 # Enhance contrast for medical images
