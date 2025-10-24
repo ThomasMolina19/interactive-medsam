@@ -1,5 +1,9 @@
 import sys
+import os
 sys.path.append('path/to/segment-anything')
+# Agregar path al módulo src
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+
 import numpy as np
 from PIL import Image
 import matplotlib.pyplot as plt
@@ -11,8 +15,10 @@ import cv2
 from matplotlib.patches import Rectangle
 import matplotlib.patches as patches
 from matplotlib.widgets import RectangleSelector
-import os
 from pathlib import Path
+
+# Importar mejoras de Fase 1
+from src.preprocessing import enhance_bone_contrast, detect_bone_edges
 
 
 device = "mps" if torch.backends.mps.is_available() else "cpu"
@@ -138,8 +144,10 @@ def process_single_image(image_path, box, save_visualization=True):
     # Cargar imagen
     img = np.array(Image.open(image_path).convert("RGB"))
     
-    # Mejorar contraste
-    img_enhanced = cv2.convertScaleAbs(img, alpha=1.2, beta=10)
+    # ============ FASE 1: Preprocesamiento Mejorado ============
+    # Método antiguo: img_enhanced = cv2.convertScaleAbs(img, alpha=1.2, beta=10)
+    # Método nuevo - CLAHE (Fase 1)
+    img_enhanced = enhance_bone_contrast(img, clip_limit=2.0, tile_grid_size=(8, 8))
     
     # Configurar predictor
     predictor.set_image(img_enhanced)

@@ -1,5 +1,9 @@
 import sys
+import os
 sys.path.append('path/to/segment-anything')
+# Agregar path al módulo src
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+
 import numpy as np
 from PIL import Image
 import matplotlib.pyplot as plt
@@ -11,6 +15,9 @@ import cv2
 from matplotlib.patches import Rectangle
 import matplotlib.patches as patches
 from matplotlib.widgets import RectangleSelector
+
+# Importar mejoras de Fase 1
+from src.preprocessing import enhance_bone_contrast, detect_bone_edges
 
 
 device = "mps" if torch.backends.mps.is_available() else "cpu"
@@ -29,8 +36,14 @@ predictor = SamPredictor(sam)
 # Line 31: Here goes the path to your medical image
 img = np.array(Image.open("path/to/your/medical/image.png").convert("RGB"))
 
-# Enhance contrast for medical images
-img_enhanced = cv2.convertScaleAbs(img, alpha=1.2, beta=10)
+# ============ FASE 1: Preprocesamiento Mejorado ============
+# Método antiguo (comentado):
+# img_enhanced = cv2.convertScaleAbs(img, alpha=1.2, beta=10)
+
+# Método nuevo - CLAHE (Fase 1)
+print("🔄 Aplicando preprocesamiento Fase 1 (CLAHE)...")
+img_enhanced = enhance_bone_contrast(img, clip_limit=2.0, tile_grid_size=(8, 8))
+print("✅ Preprocesamiento completado")
 
 predictor.set_image(img_enhanced)
 
