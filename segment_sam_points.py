@@ -15,7 +15,7 @@ device = "mps" if torch.backends.mps.is_available() else "cpu"
 
 
 # Here goes the path to your SAM model checkpoint
-ckpt = "/Users/thomasmolinamolina/Downloads/UNAL/MATERIAS/SEMESTRE 6/PALUZNY/Checkpoints/sam_vit_h_4b8939.pth"
+ckpt = "Checkpoints/sam_vit_h_4b8939.pth"
 
 # Load model
 sam = sam_model_registry["vit_h"](checkpoint=ckpt)
@@ -23,7 +23,7 @@ sam = sam.to(device)
 predictor = SamPredictor(sam)
 
 # Here goes the path to your medical image
-img = np.array(Image.open("/Users/thomasmolinamolina/Downloads/UNAL/MATERIAS/SEMESTRE 6/PALUZNY/medsam-unal-project/dicom_pngs/I14.png").convert("RGB"))
+img = np.array(Image.open("path.png").convert("RGB"))
 
 # Enhance contrast for medical images
 img_enhanced = cv2.convertScaleAbs(img, alpha=1.2, beta=10)

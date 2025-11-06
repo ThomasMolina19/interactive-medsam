@@ -1,10 +1,13 @@
 # Interactive MedSAM Segmentation
 
-Interactive medical image segmentation tool using MedSAM (Medical Segment Anything Model) with enhanced preprocessing and post-processing specifically optimized for medical imaging applications.
+Interactive medical image segmentation tool using SAM (Segment Anything Model) and MedSAM with enhanced preprocessing and post-processing specifically optimized for medical imaging applications.
 
 ## 🎯 Features
 
+- **Interactive Point-Based Selection**: Real-time segmentation with positive/negative point prompts
 - **Interactive Bounding Box Selection**: User-friendly interface for selecting regions of interest
+- **Real-Time Preview**: See segmentation results instantly as you add points
+- **Undo/Redo Functionality**: Easy correction of point selections with keyboard shortcuts
 - **Medical Image Enhancement**: Automatic contrast adjustment optimized for medical images
 - **Advanced Post-Processing**: Morphological operations to refine segmentation masks
 - **Multi-Mask Generation**: Generates multiple segmentation proposals and selects the best one
@@ -68,7 +71,27 @@ pip install -r requirements.txt
 pip install git+https://github.com/facebookresearch/segment-anything.git
 ```
 
-### Step 4: Download MedSAM checkpoint
+### Step 4: Download SAM/MedSAM checkpoints
+
+You can use either SAM (standard) or MedSAM (medical-optimized) checkpoints.
+
+#### **Option A: SAM (Segment Anything Model) - Recommended**
+
+Download SAM checkpoints from the official repository:
+
+1. Visit [SAM Checkpoints](https://github.com/facebookresearch/segment-anything#model-checkpoints)
+2. Choose a model size:
+   - **ViT-H (Huge)**: Best quality, ~2.4 GB - [Download](https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth)
+   - **ViT-L (Large)**: Good balance, ~1.2 GB - [Download](https://dl.fbaipublicfiles.com/segment_anything/sam_vit_l_0b3195.pth)
+   - **ViT-B (Base)**: Faster, ~375 MB - [Download](https://dl.fbaipublicfiles.com/segment_anything/sam_vit_b_01ec64.pth)
+
+3. Create checkpoints directory and move the file:
+   ```bash
+   mkdir -p checkpoints
+   mv ~/Downloads/sam_vit_*.pth checkpoints/
+   ```
+
+#### **Option B: MedSAM (Medical Segment Anything)**
 
 Download the pre-trained MedSAM model checkpoint (~2.4 GB):
 
@@ -139,7 +162,64 @@ interactive-medsam/
 
 ## 🚀 Usage
 
-### Single Image Segmentation
+### Point-Based Segmentation (Real-Time) - NEW! ⭐
+
+The most interactive and intuitive method with real-time feedback.
+
+#### Step 1: Update file paths
+
+Edit the script `segment_sam_points.py` and update:
+
+```python
+# Line 6: Update the SAM repository path (if needed)
+sys.path.append('path/to/segment-anything')
+
+# Line 19: Update checkpoint path
+ckpt = "/path/to/checkpoints/sam_vit_h_4b8939.pth"
+
+# Line 28: Update your image path
+img = np.array(Image.open("/path/to/your/medical/image.png").convert("RGB"))
+```
+
+#### Step 2: Run the interactive segmentation tool
+
+```bash
+python segment_sam_points.py
+```
+
+#### Step 3: Interactive point selection with real-time preview
+
+The tool opens a **dual-panel interface**:
+
+**Left Panel**: Original image where you place points
+**Right Panel**: Live segmentation preview (updates instantly!)
+
+**Controls:**
+- 🟢 **Right Click**: Add POSITIVE point (mark the object you want)
+- 🔴 **Left Click**: Add NEGATIVE point (exclude unwanted regions)
+- ⌨️ **Press 'z'**: Undo last point
+- ⌨️ **Press 'c'**: Clear all points
+- ✅ **Close window or ESC**: Finish and view final results
+
+**Workflow:**
+1. Right-click on the object you want to segment (e.g., bone, organ)
+2. See the segmentation appear instantly on the right panel
+3. Add more positive points to refine the selection
+4. Left-click on areas to exclude if needed
+5. Use 'z' to undo mistakes
+6. Close when satisfied to see detailed results
+
+**Example:**
+```
+🎯 Selecting a humerus bone:
+1. Right-click center of bone → instant preview
+2. Right-click on bone edges → refinement
+3. Left-click on background if included → exclusion
+4. Press 'z' if you made a mistake
+5. Close window → see final visualization
+```
+
+### Single Image Segmentation (Bounding Box)
 
 #### Step 1: Update file paths
 
@@ -332,23 +412,43 @@ print("💾 Mask saved as 'segmentation_result.png'")
 ```
 interactive-medsam/
 ├── checkpoints/
-│   └── medsam_vit_b.pth          # MedSAM model checkpoint
-├── dicom_pngs/                    # Input images folder
+│   ├── sam_vit_h_4b8939.pth       # SAM ViT-Huge checkpoint
+│   ├── sam_vit_b_01ec64.pth       # SAM ViT-Base checkpoint (optional)
+│   └── medsam_vit_b.pth           # MedSAM checkpoint (optional)
+├── dicom_pngs/                     # Input images folder
 │   ├── I01.png
 │   └── ...
-├── segmentation_results/          # Output folder (batch processing)
+├── segmentation_results/           # Output folder (batch processing)
 │   ├── I01_segmentation.png
 │   ├── I01_mask.png
 │   └── ...
-├── segment_one.py                 # Single image segmentation
-├── segment_multiple.py            # Batch processing script
-├── requirements.txt               # Python dependencies
-├── README.md                      # This file
-└── examples/                      # (Optional) Example images
+├── segment_sam_points.py           # 🆕 Point-based real-time segmentation
+├── segment_one.py                  # Bounding box single image (SAM)
+├── segment_one_medsam.py           # Bounding box single image (MedSAM)
+├── segment_multiple.py             # Batch processing script
+├── requirements.txt                # Python dependencies
+├── README.md                       # This file
+└── examples/                       # (Optional) Example images
     └── sample_medical_image.png
 ```
 
 ## 🔍 Key Functions
+
+### `interactive_point_selector(img, predictor)` 🆕
+Real-time interactive point-based segmentation with live preview.
+
+**Features:**
+- Dual-panel interface (image + live mask)
+- Positive/negative point prompts
+- Instant segmentation feedback
+- Undo/redo functionality (keyboard shortcuts)
+- Confidence score and area display
+
+**Controls:**
+- Right-click: Positive points (green stars ⭐)
+- Left-click: Negative points (red X ❌)
+- 'z' key: Undo last point
+- 'c' key: Clear all points
 
 ### `interactive_box_selector(img)`
 Interactive GUI for region of interest selection using matplotlib's RectangleSelector widget.
@@ -368,10 +468,27 @@ Post-processing pipeline for mask refinement.
 
 ## 🎓 Use Cases
 
-- **Medical Research**: Organ segmentation, tumor detection
-- **Clinical Applications**: ROI analysis, measurement tools
-- **Educational**: Teaching medical image analysis
-- **Prototyping**: Quick annotation for training datasets
+- **Medical Research**: Organ segmentation, tumor detection, bone analysis
+- **Clinical Applications**: ROI analysis, measurement tools, anatomical studies
+- **Educational**: Teaching medical image analysis, interactive demonstrations
+- **Prototyping**: Quick annotation for training datasets, fast iteration
+- **Precision Medicine**: Patient-specific segmentation with point-based refinement
+
+## 🆕 What's New
+
+### Version 2.0 (Current)
+- ✨ **Point-based segmentation** with real-time preview
+- 🔄 **Undo/redo functionality** for easy correction
+- 📊 **Dual-panel interface** for instant feedback
+- ⌨️ **Keyboard shortcuts** ('z' for undo, 'c' for clear)
+- 🎯 **Positive/negative prompts** for precise control
+- 🚀 **SAM support** alongside MedSAM
+
+### Version 1.0
+- Interactive bounding box selection
+- MedSAM integration
+- Batch processing
+- Medical image enhancement
 
 ## 📚 References
 
@@ -389,15 +506,26 @@ pip install git+https://github.com/facebookresearch/segment-anything.git
 ```
 
 ### "Checkpoint not found"
-Verify the checkpoint path in line 13 matches your downloaded file location.
+Verify the checkpoint path matches your downloaded file location. Update the path in your script.
 
 ### MPS not available
-The script will automatically fallback to CPU. For NVIDIA GPU, change line 12 to `device = "cuda"`.
+The script will automatically fallback to CPU. For NVIDIA GPU, change the device to `device = "cuda"`.
 
 ### Low segmentation quality
-- Try adjusting the bounding box to better fit the region
-- Modify enhancement parameters (alpha, beta) in line 24
+- **Point-based method**: Try adding more positive points or negative points to exclude unwanted regions
+- **Box method**: Adjust the bounding box to better fit the region
+- Modify enhancement parameters (alpha, beta)
 - Adjust post-processing parameters in `refine_medical_mask()`
+
+### Segmentation not updating in real-time
+- Ensure you're clicking on the left panel (image panel)
+- Check that matplotlib backend is interactive (should be by default)
+- Try closing and reopening the script
+
+### Points not being placed
+- Make sure you're using the correct mouse button (right for positive, left for negative)
+- Verify you're clicking inside the image area
+- Check console for error messages
 
 ## 👤 Authors
  
