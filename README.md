@@ -1,24 +1,57 @@
-# Interactive MedSAM Segmentation
+# Interactive Medical Image Segmentation with SAM & MedSAM
 
-Interactive medical image segmentation tool using SAM (Segment Anything Model) and MedSAM with enhanced preprocessing and post-processing specifically optimized for medical imaging applications.
+Herramientas interactivas de segmentación de imágenes médicas utilizando **SAM** (Segment Anything Model) y **MedSAM** con preprocesamiento y postprocesamiento avanzado específicamente optimizado para aplicaciones de imagenología médica.
 
-## 🎯 Features
+## 🎯 Características Principales
 
-- **Interactive Point-Based Selection**: Real-time segmentation with positive/negative point prompts
-- **Interactive Bounding Box Selection**: User-friendly interface for selecting regions of interest
-- **Real-Time Preview**: See segmentation results instantly as you add points
-- **Undo/Redo Functionality**: Easy correction of point selections with keyboard shortcuts
-- **Medical Image Enhancement**: Automatic contrast adjustment optimized for medical images
-- **Advanced Post-Processing**: Morphological operations to refine segmentation masks
-- **Multi-Mask Generation**: Generates multiple segmentation proposals and selects the best one
-- **Comprehensive Visualization**: Side-by-side comparison of original and refined results
-- **MPS Support**: Optimized for Apple Silicon (M1/M2/M3)
+- **Segmentación Basada en Puntos (Tiempo Real)**: Vista previa en vivo con prompts de puntos positivos/negativos
+- **Segmentación con Bounding Box**: Interfaz intuitiva para seleccionar regiones de interés
+- **Vista Previa en Tiempo Real**: Ver resultados de segmentación instantáneamente
+- **Funcionalidad Deshacer/Limpiar**: Corrección fácil con atajos de teclado ('z', 'c')
+- **Mejora de Imágenes Médicas**: CLAHE para CT/MRI, ajuste de contraste automático
+- **Postprocesamiento Avanzado**: Operaciones morfológicas para refinar máscaras
+- **Generación Multi-Máscara**: Genera múltiples propuestas y selecciona la mejor
+- **Visualización Completa**: Comparación lado a lado con 6 vistas diferentes
+- **Soporte Multi-Dispositivo**: CUDA, MPS (Apple Silicon), y CPU
 
-## 🔧 Requirements
+## ⚡ Quick Start
 
+```bash
+# 1. Clonar el repositorio
+git clone https://github.com/ThomasMolina19/medsam-unal-project.git
+cd medsam-unal-project
+
+# 2. Instalar dependencias
+pip install -r requirements.txt
+pip install git+https://github.com/facebookresearch/segment-anything.git
+
+# 3. Descargar checkpoints (ver sección de instalación)
+mkdir Checkpoints
+# Descargar sam_vit_h_4b8939.pth o medsam_vit_b.pth
+
+# 4. Ejecutar segmentación interactiva
+python segment_sam_points.py        # SAM con puntos
+python segment_medsam_points.py     # MedSAM con puntos (recomendado)
+python segment_one_medsam.py        # MedSAM con bounding box
+```
+
+## 🔧 Requisitos
+
+### Sistema
 - Python 3.8+
 - PyTorch 2.0+
-- CUDA-capable GPU, Apple Silicon (MPS), or CPU
+- Dispositivo: CUDA GPU, Apple Silicon (MPS), o CPU
+
+### Librerías Principales
+- `torch` - Framework de deep learning
+- `segment-anything` - Modelo SAM de Meta
+- `numpy` - Operaciones numéricas
+- `matplotlib` - Visualización e interfaz interactiva
+- `opencv-python` (cv2) - Procesamiento de imágenes
+- `scikit-image` - Operaciones morfológicas
+- `scipy` - Funciones científicas
+- `Pillow` (PIL) - Carga de imágenes
+- `pydicom` - Lectura de archivos DICOM (opcional)
 
 ## 📦 Installation
 
@@ -160,190 +193,164 @@ interactive-medsam/
 - Always download from official sources to ensure model integrity
 - The checkpoint is based on SAM's ViT-B (Vision Transformer Base) architecture
 
-## 🚀 Usage
+## 🚀 Uso
 
-### Point-Based Segmentation (Real-Time) - NEW! ⭐
+### Opción 1: SAM con Puntos Interactivos (Tiempo Real) ⭐
 
-The most interactive and intuitive method with real-time feedback.
+**Script:** `segment_sam_points.py`
 
-#### Step 1: Update file paths
+La forma más interactiva e intuitiva con retroalimentación en tiempo real.
 
-Edit the script `segment_sam_points.py` and update:
+#### Características:
+- Modelo: SAM ViT-H (generalista)
+- Entrada: Imágenes PNG/JPG
+- Mejora: Ajuste de contraste con OpenCV
+- Interfaz: Dual-panel con vista previa en vivo
+
+#### Paso 1: Configurar rutas
+
+Edita el script `segment_sam_points.py` y actualiza:
 
 ```python
-# Line 6: Update the SAM repository path (if needed)
+# Línea 2: Ruta al repositorio de SAM (si es necesario)
 sys.path.append('path/to/segment-anything')
 
-# Line 19: Update checkpoint path
-ckpt = "/path/to/checkpoints/sam_vit_h_4b8939.pth"
+# Línea 18: Ruta al checkpoint de SAM
+ckpt = "Checkpoints/sam_vit_h_4b8939.pth"
 
-# Line 28: Update your image path
-img = np.array(Image.open("/path/to/your/medical/image.png").convert("RGB"))
+# Línea 26: Ruta a tu imagen
+img = np.array(Image.open("path.png").convert("RGB"))
 ```
 
-#### Step 2: Run the interactive segmentation tool
+#### Paso 2: Ejecutar
 
 ```bash
 python segment_sam_points.py
 ```
 
-#### Step 3: Interactive point selection with real-time preview
+#### Paso 3: Selección interactiva con vista previa en tiempo real
 
-The tool opens a **dual-panel interface**:
+La herramienta abre una **interfaz de doble panel**:
 
-**Left Panel**: Original image where you place points
-**Right Panel**: Live segmentation preview (updates instantly!)
+**Panel Izquierdo**: Imagen original donde colocas los puntos
+**Panel Derecho**: Vista previa de segmentación en vivo (¡se actualiza instantáneamente!)
 
-**Controls:**
-- 🟢 **Right Click**: Add POSITIVE point (mark the object you want)
-- 🔴 **Left Click**: Add NEGATIVE point (exclude unwanted regions)
-- ⌨️ **Press 'z'**: Undo last point
-- ⌨️ **Press 'c'**: Clear all points
-- ✅ **Close window or ESC**: Finish and view final results
+**Controles:**
+- 🟢 **Click DERECHO**: Agregar punto POSITIVO (marca el objeto deseado)
+- 🔴 **Click IZQUIERDO**: Agregar punto NEGATIVO (excluir regiones no deseadas)
+- ⌨️ **Tecla 'z'**: Deshacer último punto
+- ⌨️ **Tecla 'c'**: Limpiar todos los puntos
+- ✅ **ENTER o cerrar ventana**: Finalizar y ver resultados
 
-**Workflow:**
-1. Right-click on the object you want to segment (e.g., bone, organ)
-2. See the segmentation appear instantly on the right panel
-3. Add more positive points to refine the selection
-4. Left-click on areas to exclude if needed
-5. Use 'z' to undo mistakes
-6. Close when satisfied to see detailed results
+**Flujo de trabajo:**
+1. Click derecho en el objeto a segmentar (ej: hueso, órgano)
+2. Ver la segmentación aparecer instantáneamente en el panel derecho
+3. Agregar más puntos positivos para refinar
+4. Click izquierdo en áreas a excluir si es necesario
+5. Usar 'z' para deshacer errores
+6. Cerrar cuando estés satisfecho para ver resultados detallados
 
-**Example:**
+**Ejemplo:**
 ```
-🎯 Selecting a humerus bone:
-1. Right-click center of bone → instant preview
-2. Right-click on bone edges → refinement
-3. Left-click on background if included → exclusion
-4. Press 'z' if you made a mistake
-5. Close window → see final visualization
+🎯 Segmentando un húmero:
+1. Click derecho en centro del hueso → vista previa instantánea
+2. Click derecho en bordes del hueso → refinamiento
+3. Click izquierdo en fondo si se incluyó → exclusión
+4. Presionar 'z' si cometiste un error
+5. Cerrar ventana → ver visualización final con 6 vistas
 ```
 
-### Single Image Segmentation (Bounding Box)
+### Opción 2: MedSAM con Puntos Interactivos (Producción) 🏥
 
-#### Step 1: Update file paths
+**Script:** `segment_medsam_points.py`
 
-Edit the script `segment_one.py` and update:
+Versión robusta y profesional con MedSAM especializado en imágenes médicas.
+
+#### Características:
+- Modelo: MedSAM ViT-B (especializado en medicina)
+- Carga robusta: `strict=False`, modo evaluación
+- Mejora: CLAHE (Contrast Limited Adaptive Histogram Equalization)
+- Soporte para DICOM con windowing Hounsfield
+- Postprocesamiento morfológico avanzado
+
+#### Paso 1: Configurar rutas
+
+Edita el archivo `segment_medsam_points.py`:
 
 ```python
-# Line 6: Update the SAM repository path (if needed)
-sys.path.append('path/to/segment-anything')
+# Línea 39: Ruta al checkpoint de MedSAM
+CKPT_PATH = "Checkpoints/medsam_vit_b.pth"
 
-# Line 13: Update checkpoint path
-ckpt = "checkpoints/medsam_vit_b.pth"
+# Línea 40: Ruta a tu imagen
+IMG_PATH = "path.png"
 
-# Line 24: Update your image path
-img = np.array(Image.open("path/to/your/medical/image.png").convert("RGB"))
+# Línea 43: (Opcional) Espaciado de píxeles para métricas físicas
+PIXEL_SPACING_MM = (0.7, 0.7)  # Para cálculos en mm²
 ```
 
-#### Step 2: Run the segmentation tool
+#### Paso 2: Ejecutar
 
 ```bash
-python segment_one.py
+python segment_medsam_points.py
 ```
 
-#### Step 3: Interactive segmentation
+#### Paso 3: Interacción
 
-1. **Select Region**: A window will open showing your medical image
-2. **Draw Bounding Box**: Click and drag to create a box around your region of interest
-3. **Adjust**: Drag the edges to resize or adjust the box
-4. **Confirm**: Close the window when satisfied with the selection
-5. **Results**: View the segmentation results in the output visualization
+Same dual-panel interface as SAM version:
+- Click derecho: puntos positivos (verde)
+- Click izquierdo: puntos negativos (rojo)
+- 'z': deshacer, 'c': limpiar
+- Vista previa en vivo
 
-### Batch Processing (Multiple Images)
+#### Ventajas de MedSAM:
+- Mejor para anatomías complejas
+- Entrenado específicamente en imágenes médicas
+- Carga robusta del checkpoint
+- Métricas físicas (mm²) si hay spacing
 
-For processing multiple medical images in a folder:
+### Opción 3: MedSAM con Bounding Box 📦
 
-#### Step 1: Prepare your images
+**Script:** `segment_one_medsam.py`
 
-Place all medical images (PNG format) in a folder, for example:
-```
-dicom_pngs/
-├── I01.png
-├── I02.png
-├── I03.png
-└── ...
-```
+Segmentación rápida usando selección rectangular.
 
-#### Step 2: Update file paths
-
-Edit the script `segment_multiple.py` and update:
+#### Paso 1: Configurar rutas
 
 ```python
-# Line 13: Update checkpoint path
-ckpt = "checkpoints/medsam_vit_b.pth"
+# Línea 19: Ruta al checkpoint
+ckpt = "path/Checkpoints/medsam_vit_b.pth"
 
-# Line 111: Update input folder path
-input_folder = "path/to/your/dicom_pngs"
-
-# Line 112: Update output folder path
-output_folder = "path/to/segmentation_results"
+# Línea 30: Ruta a la imagen
+img = np.array(Image.open("path.png").convert("RGB"))
 ```
 
-#### Step 3: Choose processing mode
-
-The script supports two modes:
-
-**Mode 1: Fixed Bounding Box (Default)**
-- Uses the same bounding box for all images
-- Faster processing
-- Ideal for aligned/registered images
-
-```python
-# In segment_multiple.py, line 116
-use_interactive = False
-fixed_box = [150, 200, 450, 500]  # [x_min, y_min, x_max, y_max]
-```
-
-**Mode 2: Interactive Box Selection**
-- Select bounding box for each image
-- More flexible but slower
-- Better for varying anatomies
-
-```python
-# In segment_multiple.py, line 116
-use_interactive = True
-```
-
-#### Step 4: Run batch processing
+#### Paso 2: Ejecutar
 
 ```bash
-python segment_multiple.py
+python segment_one_medsam.py
 ```
 
-#### Step 5: Monitor progress
+#### Paso 3: Selección de región
 
-The script will display progress for each image:
-```
-Processing image 1/50: I01.png
-✅ Successfully processed I01.png
-Processing image 2/50: I02.png
-✅ Successfully processed I02.png
-...
-```
+1. **Seleccionar Región**: Se abrirá una ventana con tu imagen
+2. **Dibujar Bounding Box**: Click y arrastrar para crear un rectángulo
+3. **Ajustar**: Arrastrar los bordes para redimensionar
+4. **Confirmar**: Cerrar la ventana cuando estés satisfecho
+5. **Resultados**: Ver los resultados en visualización de 6 paneles
 
-#### Step 6: View results
+## 📊 Comparación de Scripts
 
-Results are saved in the output folder with the structure:
-```
-segmentation_results/
-├── I01_segmentation.png          # Visualization
-├── I01_mask.png                   # Binary mask
-├── I02_segmentation.png
-├── I02_mask.png
-└── ...
-```
-
-#### Batch Processing Summary
-
-After completion, you'll see statistics:
-```
-📊 Batch Processing Summary:
-✅ Successfully processed: 48/50 images
-❌ Failed: 2 images
-⏱️  Total time: 5m 23s
-⚡ Average time per image: 6.5s
-```
+| Característica | `segment_sam_points.py` | `segment_medsam_points.py` | `segment_one_medsam.py` |
+|----------------|-------------------------|----------------------------|-------------------------|
+| **Modelo** | SAM ViT-H | MedSAM ViT-B | MedSAM ViT-B |
+| **Entrada** | Puntos interactivos | Puntos interactivos | Bounding box |
+| **Mejora** | Contraste OpenCV | CLAHE | Contraste OpenCV |
+| **Vista previa** | ✅ Tiempo real | ✅ Tiempo real | ❌ Solo final |
+| **Carga robusta** | ❌ | ✅ strict=False | ✅ |
+| **DICOM windowing** | ❌ | ✅ Opcional | ❌ |
+| **Métricas físicas** | ❌ | ✅ mm² con spacing | ❌ |
+| **Mejor para** | Imágenes generales | Imágenes médicas | Segmentación rápida |
+| **multimask_output** | True (3 máscaras) | False (1 máscara) | True (3 máscaras) |
 
 ## 📊 Output
 
@@ -370,24 +377,55 @@ The tool provides comprehensive visualization:
 🎭 Total masks generated: 3
 ```
 
-## 🏗️ Technical Details
+## 🏗️ Detalles Técnicos
 
-### Image Enhancement
-- **Contrast adjustment**: `alpha=1.2, beta=10`
-- Optimized for medical imaging (CT, MRI, X-rays)
+### Preprocesamiento de Imágenes
 
-### Segmentation Pipeline
-1. Image preprocessing and enhancement
-2. Interactive bounding box selection
-3. MedSAM inference with multi-mask output
-4. Best mask selection based on confidence scores
-5. Post-processing and refinement
+#### `segment_sam_points.py` y `segment_one_medsam.py`:
+```python
+# Ajuste de contraste con OpenCV
+img_enhanced = cv2.convertScaleAbs(img, alpha=1.2, beta=10)
+```
+- **alpha=1.2**: Factor de contraste (multiplicador)
+- **beta=10**: Ajuste de brillo (offset)
+- Simple y rápido para imágenes generales
 
-### Mask Refinement
-- **Small object removal**: Filters objects < 500 pixels
-- **Hole filling**: Binary morphological operations
-- **Smoothing**: Disk-shaped kernel (radius=2)
-- **Opening/Closing**: Noise reduction and gap filling
+#### `segment_medsam_points.py`:
+```python
+# CLAHE (Contrast Limited Adaptive Histogram Equalization)
+def apply_clahe_rgb(img_rgb, clip_limit=2.0, tile_grid_size=(8, 8)):
+    # Convierte a LAB, aplica CLAHE al canal L
+    # Mejor para imágenes médicas con detalles finos
+```
+- **clip_limit=2.0**: Limita la amplificación del contraste
+- **tile_grid_size=(8,8)**: Tamaño de las regiones locales
+- Adaptativo: cada región se mejora independientemente
+- **Opcional**: Función para windowing Hounsfield (DICOM)
+
+### Pipeline de Segmentación
+
+#### Puntos Interactivos (SAM/MedSAM):
+1. Carga y preprocesamiento de imagen
+2. Configuración del predictor (`predictor.set_image()`)
+3. Selección interactiva de puntos (GUI dual-panel)
+4. Predicción en tiempo real por cada punto agregado
+5. Selección de mejor máscara (score más alto)
+6. Postprocesamiento y refinamiento
+7. Visualización de 6 vistas comparativas
+
+#### Bounding Box (MedSAM):
+1. Carga y preprocesamiento de imagen
+2. Selección interactiva de bounding box (GUI)
+3. Predicción con box completo (`predictor.predict(box=...)`)
+4. Selección de mejor máscara
+5. Postprocesamiento
+6. Visualización de resultados
+
+### Refinamiento de Máscaras
+- **Remoción de objetos pequeños**: Filtra objetos < 500 píxeles
+- **Relleno de huecos**: Operaciones morfológicas binarias
+- **Suavizado**: Kernel en forma de disco (radio=2)
+- **Opening/Closing**: Reducción de ruido y relleno de gaps
 
 ## 🖥️ Device Support
 
@@ -407,129 +445,205 @@ refined_mask_pil.save("segmentation_result.png")
 print("💾 Mask saved as 'segmentation_result.png'")
 ```
 
-## 📁 Project Structure
+## 📁 Estructura del Proyecto
 
 ```
-interactive-medsam/
-├── checkpoints/
-│   ├── sam_vit_h_4b8939.pth       # SAM ViT-Huge checkpoint
-│   ├── sam_vit_b_01ec64.pth       # SAM ViT-Base checkpoint (optional)
-│   └── medsam_vit_b.pth           # MedSAM checkpoint (optional)
-├── dicom_pngs/                     # Input images folder
-│   ├── I01.png
-│   └── ...
-├── segmentation_results/           # Output folder (batch processing)
-│   ├── I01_segmentation.png
-│   ├── I01_mask.png
-│   └── ...
-├── segment_sam_points.py           # 🆕 Point-based real-time segmentation
-├── segment_one.py                  # Bounding box single image (SAM)
-├── segment_one_medsam.py           # Bounding box single image (MedSAM)
-├── segment_multiple.py             # Batch processing script
-├── requirements.txt                # Python dependencies
-├── README.md                       # This file
-└── examples/                       # (Optional) Example images
-    └── sample_medical_image.png
+medsam-unal-project/
+├── Checkpoints/
+│   ├── sam_vit_h_4b8939.pth       # SAM ViT-Huge checkpoint (~2.4 GB)
+│   ├── sam_vit_b_01ec64.pth       # SAM ViT-Base checkpoint (~375 MB)
+│   └── medsam_vit_b.pth           # MedSAM ViT-B checkpoint (~2.4 GB)
+├── DATA/                           # Carpeta de datos (imágenes DICOM/PNG)
+│   └── Data/
+│       └── HumeroData/
+│           └── IM-0008-0016.dcm
+├── segment_sam_points.py           # ⭐ SAM con puntos (tiempo real)
+├── segment_medsam_points.py        # 🏥 MedSAM con puntos (robusto)
+├── segment_one_medsam.py           # 📦 MedSAM con bounding box
+├── requirements.txt                # Dependencias de Python
+├── README.md                       # Este archivo
+└── Latex/                          # (Opcional) Documentación LaTeX
+    └── informe_entrega1.tex
 ```
 
-## 🔍 Key Functions
+## 🔍 Funciones Clave
 
-### `interactive_point_selector(img, predictor)` 🆕
-Real-time interactive point-based segmentation with live preview.
+### `interactive_point_selector(img, predictor)`
+Segmentación interactiva basada en puntos con vista previa en tiempo real.
 
-**Features:**
-- Dual-panel interface (image + live mask)
-- Positive/negative point prompts
-- Instant segmentation feedback
-- Undo/redo functionality (keyboard shortcuts)
-- Confidence score and area display
+**Implementado en:**
+- `segment_sam_points.py` (SAM)
+- `segment_medsam_points.py` (MedSAM - versión mejorada)
 
-**Controls:**
-- Right-click: Positive points (green stars ⭐)
-- Left-click: Negative points (red X ❌)
-- 'z' key: Undo last point
-- 'c' key: Clear all points
+**Características:**
+- Interfaz dual-panel (imagen + máscara en vivo)
+- Prompts de puntos positivos/negativos
+- Retroalimentación instantánea
+- Funcionalidad deshacer/limpiar ('z', 'c')
+- Visualización de score y área
+
+**Controles:**
+- Click derecho: Puntos positivos (estrellas verdes ⭐)
+- Click izquierdo: Puntos negativos (X rojas ❌)
+- Tecla 'z': Deshacer último punto
+- Tecla 'c': Limpiar todos los puntos
 
 ### `interactive_box_selector(img)`
-Interactive GUI for region of interest selection using matplotlib's RectangleSelector widget.
+Interfaz GUI para selección de región de interés con RectangleSelector de matplotlib.
 
-**Features:**
-- Real-time coordinate display
-- Resizable and draggable boxes
-- Visual feedback with colored overlays
+**Implementado en:**
+- `segment_one_medsam.py`
+
+**Características:**
+- Visualización de coordenadas en tiempo real
+- Cajas redimensionables y arrastrables
+- Retroalimentación visual con overlays coloridos
+- Modo interactivo (ajustable después de crear)
 
 ### `refine_medical_mask(mask)`
-Post-processing pipeline for mask refinement.
+Pipeline de postprocesamiento para refinamiento de máscaras.
 
-**Operations:**
-- Small object removal
-- Hole filling
-- Morphological smoothing (opening + closing)
+**Implementado en todos los scripts**
 
-## 🎓 Use Cases
+**Operaciones:**
+- Remoción de objetos pequeños (`min_size=500`)
+- Relleno de huecos (`binary_fill_holes`)
+- Suavizado morfológico (opening + closing con `disk(2)`)
 
-- **Medical Research**: Organ segmentation, tumor detection, bone analysis
-- **Clinical Applications**: ROI analysis, measurement tools, anatomical studies
-- **Educational**: Teaching medical image analysis, interactive demonstrations
-- **Prototyping**: Quick annotation for training datasets, fast iteration
-- **Precision Medicine**: Patient-specific segmentation with point-based refinement
+## 🎓 Casos de Uso
 
-## 🆕 What's New
+### Investigación Médica
+- **Segmentación de huesos**: Análisis de húmero en imágenes CT
+- **Detección de tumores**: Identificación de regiones anormales
+- **Análisis cuantitativo**: Mediciones de área, volumen
 
-### Version 2.0 (Current)
-- ✨ **Point-based segmentation** with real-time preview
-- 🔄 **Undo/redo functionality** for easy correction
-- 📊 **Dual-panel interface** for instant feedback
-- ⌨️ **Keyboard shortcuts** ('z' for undo, 'c' for clear)
-- 🎯 **Positive/negative prompts** for precise control
-- 🚀 **SAM support** alongside MedSAM
+### Aplicaciones Clínicas
+- **Análisis ROI**: Extracción de regiones de interés específicas
+- **Herramientas de medición**: Cálculos de área en píxeles o mm²
+- **Estudios anatómicos**: Análisis comparativo de estructuras
 
-### Version 1.0
-- Interactive bounding box selection
-- MedSAM integration
-- Batch processing
-- Medical image enhancement
+### Educación
+- **Enseñanza de análisis de imágenes médicas**: Demostraciones interactivas
+- **Comparación de modelos**: SAM vs MedSAM en casos reales
+- **Prototipos rápidos**: Anotación para datasets de entrenamiento
 
-## 📚 References
+### Medicina de Precisión
+- **Segmentación específica del paciente**: Refinamiento con puntos interactivos
+- **Planificación quirúrgica**: Identificación precisa de estructuras
+- **Seguimiento longitudinal**: Comparación de estudios en el tiempo
 
-- **MedSAM Paper**: [arXiv:2304.12306](https://arxiv.org/abs/2304.12306)
-- **MedSAM Repository**: https://github.com/bowang-lab/MedSAM
+## 🆕 Características del Proyecto
+
+### Scripts Disponibles (3 Herramientas)
+
+1. **`segment_sam_points.py`** - SAM Generalista
+   - Segmentación con puntos interactivos
+   - Vista previa en tiempo real
+   - Modelo SAM ViT-H
+   - Contraste simple con OpenCV
+
+2. **`segment_medsam_points.py`** - MedSAM Profesional
+   - Segmentación con puntos (versión robusta)
+   - CLAHE para mejora adaptativa
+   - Carga de checkpoint tolerante a errores
+   - Soporte opcional para windowing DICOM
+   - Métricas físicas (mm²) con pixel spacing
+
+3. **`segment_one_medsam.py`** - Bounding Box Rápido
+   - Segmentación con caja rectangular
+   - Interfaz de arrastrar y soltar
+   - Redimensionable e interactivo
+   - Procesamiento más rápido
+
+### Mejoras Implementadas
+- ✨ **Segmentación basada en puntos** con vista previa en tiempo real
+- 🔄 **Funcionalidad deshacer/limpiar** para corrección fácil
+- 📊 **Interfaz dual-panel** para retroalimentación instantánea
+- ⌨️ **Atajos de teclado** ('z' para deshacer, 'c' para limpiar)
+- 🎯 **Prompts positivos/negativos** para control preciso
+- 🚀 **Soporte SAM y MedSAM** en scripts separados
+- 🏥 **CLAHE para imágenes médicas** (MedSAM version)
+- 🔧 **Carga robusta de checkpoints** con strict=False
+
+## 📚 Referencias
+
+### Papers
+- **MedSAM**: Ma, J., et al. (2023). "Segment Anything in Medical Images" [arXiv:2304.12306](https://arxiv.org/abs/2304.12306)
+- **SAM**: Kirillov, A., et al. (2023). "Segment Anything" [arXiv:2304.02643](https://arxiv.org/abs/2304.02643)
+
+### Repositorios
+- **MedSAM Official**: https://github.com/bowang-lab/MedSAM
 - **Segment Anything (SAM)**: https://github.com/facebookresearch/segment-anything
-- **SAM Paper**: [arXiv:2304.02643](https://arxiv.org/abs/2304.02643)
+- **Este Proyecto**: https://github.com/ThomasMolina19/medsam-unal-project
 
-## 🐛 Troubleshooting
+### Recursos Adicionales
+- **SAM Demo**: https://segment-anything.com/
+- **MedSAM Hugging Face**: https://huggingface.co/wanglab/medsam
+
+## 🐛 Solución de Problemas
 
 ### "No module named 'segment_anything'"
-Install SAM:
+Instalar SAM:
 ```bash
 pip install git+https://github.com/facebookresearch/segment-anything.git
 ```
 
-### "Checkpoint not found"
-Verify the checkpoint path matches your downloaded file location. Update the path in your script.
+### "Checkpoint not found" o errores de ruta
+Verifica que la ruta del checkpoint coincida con la ubicación del archivo descargado:
+- **SAM**: `Checkpoints/sam_vit_h_4b8939.pth`
+- **MedSAM**: `Checkpoints/medsam_vit_b.pth`
 
-### MPS not available
-The script will automatically fallback to CPU. For NVIDIA GPU, change the device to `device = "cuda"`.
+### Errores al cargar el checkpoint de MedSAM
+Si ves "Missing keys" o "Unexpected keys", es normal. El script `segment_medsam_points.py` usa `strict=False` para manejar esto automáticamente.
 
-### Low segmentation quality
-- **Point-based method**: Try adding more positive points or negative points to exclude unwanted regions
-- **Box method**: Adjust the bounding box to better fit the region
-- Modify enhancement parameters (alpha, beta)
-- Adjust post-processing parameters in `refine_medical_mask()`
+### MPS no disponible (Mac)
+El script automáticamente usará CPU. Para GPU NVIDIA:
+```python
+device = "cuda"  # Cambiar en línea 13 (sam_points) o línea 49 (medsam_points)
+```
 
-### Segmentation not updating in real-time
-- Ensure you're clicking on the left panel (image panel)
-- Check that matplotlib backend is interactive (should be by default)
-- Try closing and reopening the script
+### Baja calidad de segmentación
+- **Método de puntos**: Agregar más puntos positivos o negativos para excluir regiones
+- **Método de box**: Ajustar el bounding box para que se ajuste mejor
+- **Preprocesamiento**: 
+  - OpenCV: Modificar `alpha` y `beta` (línea 29 en sam_points/one_medsam)
+  - CLAHE: Ajustar `clip_limit` y `tile_grid_size` (línea 58 en medsam_points)
+- **Postprocesamiento**: Ajustar parámetros en `refine_medical_mask()` (líneas 109-122)
 
-### Points not being placed
-- Make sure you're using the correct mouse button (right for positive, left for negative)
-- Verify you're clicking inside the image area
-- Check console for error messages
+### La segmentación no se actualiza en tiempo real
+- Asegúrate de estar haciendo click en el panel izquierdo (panel de imagen)
+- Verifica que matplotlib esté en modo interactivo (por defecto)
+- Intenta cerrar y reabrir el script
+- Verifica que hay al menos un punto positivo (click derecho)
 
-## 👤 Authors
- 
+### Los puntos no se colocan
+- Usa el botón correcto del mouse:
+  - **Click DERECHO** = Positivo (verde)
+  - **Click IZQUIERDO** = Negativo (rojo)
+- Verifica que estás haciendo click dentro del área de la imagen
+- Revisa la consola para mensajes de error
 
-**Thomas Molina Molina**
+### Error: "unexpected keyword argument 'strict'"
+Tu versión de PyTorch es antigua. Actualiza:
+```bash
+pip install --upgrade torch torchvision
+```
 
-**Gustavo Adolfo Pérez**
+### Imagen muy oscura o muy clara después del preprocesamiento
+Ajusta los parámetros:
+- **OpenCV**: `alpha=1.0, beta=0` (sin cambios)
+- **CLAHE**: `clip_limit=1.0` (menos agresivo) o `clip_limit=3.0` (más agresivo)
+
+## 👥 Autores
+
+**Thomas Molina Molina**  
+Universidad Nacional de Colombia
+
+**Gustavo Adolfo Pérez**  
+Universidad Nacional de Colombia
+
+---
+
+## 📝 Licencia
+
+Este proyecto es de código abierto y está disponible para uso educativo y de investigación.

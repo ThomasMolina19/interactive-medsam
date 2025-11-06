@@ -18,6 +18,9 @@ opencv-python>=4.8.0
 scikit-image>=0.21.0
 scipy>=1.10.0
 
+# Medical Imaging (Optional - for DICOM support)
+pydicom>=2.4.0
+
 # Visualization & Interactive GUI
 matplotlib>=3.7.0
 
