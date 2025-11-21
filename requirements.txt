@@ -1,11 +1,15 @@
-# Core dependencies for SAM Medical Image Segmentation
+# ============================================
+# Interactive SAM/MedSAM Medical Image Segmentation
+# Requirements for point-based and box-based segmentation
+# ============================================
 
 # Deep Learning Framework
 torch>=2.0.0
 torchvision>=0.15.0
 
 # Segment Anything Model
-segment-anything>=1.0
+# Note: Install via: pip install git+https://github.com/facebookresearch/segment-anything.git
+# segment-anything>=1.0
 
 # Image Processing
 numpy>=1.24.0
@@ -14,17 +18,45 @@ opencv-python>=4.8.0
 scikit-image>=0.21.0
 scipy>=1.10.0
 
-# Visualization
+# Medical Imaging (Optional - for DICOM support)
+pydicom>=2.4.0
+
+# Visualization & Interactive GUI
 matplotlib>=3.7.0
 
-# Optional: For better performance on Apple Silicon
-# Uncomment if using MPS (Metal Performance Shaders)
-# torch-mps-backend
+# ============================================
+# Platform-Specific Acceleration (Optional)
+# ============================================
 
-# Optional: For CUDA support (Linux/Windows with NVIDIA GPU)
-# torch with CUDA can be installed via:
+# For Apple Silicon (M1/M2/M3) - MPS Backend
+# Already included in torch>=2.0.0, no extra package needed
+
+# For NVIDIA GPU (CUDA Support) - Linux/Windows
+# Install torch with CUDA via:
 # pip install torch torchvision --index-url https://download.pytorch.org/whl/cu118
+# or for CUDA 12.1:
+# pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
 
-# Development tools (optional)
+# ============================================
+# Development Tools (Optional)
+# ============================================
+# Uncomment if needed for development/testing
+
 # jupyter>=1.0.0
 # ipython>=8.12.0
+# pytest>=7.3.0
+
+# ============================================
+# Installation Instructions
+# ============================================
+# 1. Create virtual environment:
+#    python -m venv .venv
+#    source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+#
+# 2. Install requirements:
+#    pip install -r requirements.txt
+#
+# 3. Install Segment Anything:
+#    pip install git+https://github.com/facebookresearch/segment-anything.git
+#
+# 4. Download checkpoints (see README.md)
