@@ -473,3 +473,6 @@ if __name__ == "__main__":
     
     # Start processing
     process_dicom_folder(DICOM_FOLDER, CHECKPOINT_PATH, OUTPUT_FOLDER)
+
+
+

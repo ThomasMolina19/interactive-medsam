@@ -27,7 +27,7 @@ sam = sam.to(device)
 predictor = SamPredictor(sam)
 
 # Line 31: Here goes the path to your medical image
-img = np.array(Image.open("/Users/thomasmolinamolina/Downloads/UNAL/MATERIAS/SEMESTRE 6/PALUZNY/medsam-unal-project/dicom_pngs/I09.png").convert("RGB"))
+img = np.array(Image.open("/Users/thomasmolinamolina/Downloads/UNAL/MATERIAS/SEMESTRE 6/PALUZNY/DATA/D1/pngs/I14.png").convert("RGB"))
 
 # Enhance contrast for medical images
 img_enhanced = cv2.convertScaleAbs(img, alpha=1.2, beta=10)
@@ -154,7 +154,7 @@ axes[0,1].imshow(best_mask, alpha=0.5, cmap='Reds')
 rect = Rectangle((box[0], box[1]), box[2]-box[0], box[3]-box[1], 
                 linewidth=3, edgecolor='green', facecolor='none')
 axes[0,1].add_patch(rect)
-axes[0,1].set_title("Raw SAM Output with Selected Box")
+axes[0,1].set_title("Raw MedSAM Output with Selected Box")
 axes[0,1].axis('off')
 
 axes[0,2].imshow(best_mask, cmap='gray')

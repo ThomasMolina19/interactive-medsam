@@ -23,7 +23,7 @@ sam = sam.to(device)
 predictor = SamPredictor(sam)
 
 # Here goes the path to your medical image
-img = np.array(Image.open("/Users/thomasmolinamolina/Downloads/UNAL/MATERIAS/SEMESTRE 6/PALUZNY/DATA/D1/pngs/I15.png").convert("RGB"))
+img = np.array(Image.open("/Users/thomasmolinamolina/Downloads/UNAL/MATERIAS/SEMESTRE 6/PALUZNY/DATA/D2/pngs/IM-0008-0011.png").convert("RGB"))
 
 # Enhance contrast for medical images
 img_enhanced = cv2.convertScaleAbs(img, alpha=1.2, beta=10)

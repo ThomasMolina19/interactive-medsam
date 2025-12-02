@@ -639,9 +639,6 @@ Ajusta los parámetros:
 **Thomas Molina Molina**  
 Universidad Nacional de Colombia
 
-**Gustavo Adolfo Pérez**  
-Universidad Nacional de Colombia
-
 ---
 
 ## 📝 Licencia
