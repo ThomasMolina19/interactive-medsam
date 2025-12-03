@@ -124,7 +124,7 @@ print(f"\n🖥️  Using device: {device}")
 
 # Load SAM model
 print("🔄 Loading SAM model...")
-sam = sam_model_registry["vit_l"](checkpoint=ckpt)
+sam = sam_model_registry["vit_b"](checkpoint=ckpt)
 sam = sam.to(device)
 predictor = SamPredictor(sam)
 print("✅ SAM model loaded!")
