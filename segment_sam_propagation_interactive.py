@@ -348,10 +348,36 @@ def run_segment_sam_points(image_path):
         original_content = f.read()
     
     import re
+    # Modificar la ruta de la imagen
     modified_content = re.sub(
         r'img = np\.array\(Image\.open\(".*?"\)\.convert\("RGB"\)\)',
         f'img = np.array(Image.open("{image_path}").convert("RGB"))',
         original_content
+    )
+    
+    # Modificar la ruta del checkpoint para usar el seleccionado por el usuario
+    modified_content = re.sub(
+        r'ckpt = ".*?"',
+        f'ckpt = "{ckpt}"',
+        modified_content
+    )
+    
+    # Detectar el tipo de modelo basado en el nombre del checkpoint
+    checkpoint_name = os.path.basename(ckpt).lower()
+    if 'vit_h' in checkpoint_name:
+        model_type = 'vit_h'
+    elif 'vit_l' in checkpoint_name:
+        model_type = 'vit_l'
+    elif 'vit_b' in checkpoint_name:
+        model_type = 'vit_b'
+    else:
+        model_type = 'vit_b'  # Default
+    
+    # Modificar el tipo de modelo
+    modified_content = re.sub(
+        r'sam_model_registry\["vit_[hlb]"\]',
+        f'sam_model_registry["{model_type}"]',
+        modified_content
     )
     
     temp_script = os.path.join(script_dir, "_temp_segment_sam_points.py")
