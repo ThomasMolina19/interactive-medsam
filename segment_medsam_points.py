@@ -36,8 +36,8 @@ from segment_anything import sam_model_registry, SamPredictor
 # =========================
 # Configuración del usuario
 # =========================
-CKPT_PATH = "Checkpoints/medsam_vit_b.pth"
-IMG_PATH  = "/Users/thomasmolinamolina/Downloads/UNAL/MATERIAS/SEMESTRE 6/PALUZNY/medsam-unal-project/dicom_pngs/I13.png"
+CKPT_PATH = "/Users/thomasmolinamolina/Downloads/UNAL/MATERIAS/SEMESTRE 6/PALUZNY/Checkpoints/sam_vit_b_01ec64.pth"
+IMG_PATH  = "/Users/thomasmolinamolina/Downloads/UNAL/MATERIAS/SEMESTRE 6/PALUZNY/DATA/D1/pngs/I14.png"
 
 # Si tienes spacing físico del píxel (p. ej., de DICOM), puedes rellenarlo aquí para reportar área física
 PIXEL_SPACING_MM = (None, None)  # (dx_mm, dy_mm), por ejemplo (0.7, 0.7). Déjalo en None si no aplica.

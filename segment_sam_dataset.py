@@ -25,8 +25,8 @@ print(f"🖥️  Using device: {device}")
 
 # Paths
 ckpt = "/Users/thomasmolinamolina/Downloads/UNAL/MATERIAS/SEMESTRE 6/PALUZNY/Checkpoints/sam_vit_l_0b3195.pth"
-data_dir = "/Users/thomasmolinamolina/Downloads/UNAL/MATERIAS/SEMESTRE 6/PALUZNY/DATA/D1"
-output_dir = "/Users/thomasmolinamolina/Downloads/UNAL/MATERIAS/SEMESTRE 6/PALUZNY/DATA/D1_segmentations"
+data_dir = "/Users/thomasmolinamolina/Downloads/UNAL/MATERIAS/SEMESTRE 6/PALUZNY/DATA/D2"
+output_dir = "/Users/thomasmolinamolina/Downloads/UNAL/MATERIAS/SEMESTRE 6/PALUZNY/DATA/D2_2_segmentations"
 
 # Create output directory
 os.makedirs(output_dir, exist_ok=True)

@@ -16,7 +16,7 @@ from matplotlib.widgets import RectangleSelector
 device = "mps" if torch.backends.mps.is_available() else "cpu"
 
 # Here goes the path to your MedSAM model checkpoint
-ckpt = "/Users/thomasmolinamolina/Downloads/UNAL/MATERIAS/SEMESTRE 6/PALUZNY/Checkpoints/medsam_vit_b.pth"
+ckpt = "/Users/thomasmolinamolina/Downloads/UNAL/MATERIAS/SEMESTRE 6/PALUZNY/Checkpoints/sam_vit_b_01ec64.pth"
 
 # Load model
 sam = sam_model_registry["vit_b"]()
@@ -154,7 +154,7 @@ axes[0,1].imshow(best_mask, alpha=0.5, cmap='Reds')
 rect = Rectangle((box[0], box[1]), box[2]-box[0], box[3]-box[1], 
                 linewidth=3, edgecolor='green', facecolor='none')
 axes[0,1].add_patch(rect)
-axes[0,1].set_title("Raw MedSAM Output with Selected Box")
+axes[0,1].set_title("Raw SAM Output with Selected Box")
 axes[0,1].axis('off')
 
 axes[0,2].imshow(best_mask, cmap='gray')
