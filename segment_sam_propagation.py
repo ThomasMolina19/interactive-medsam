@@ -31,9 +31,9 @@ device = "mps" if torch.backends.mps.is_available() else "cpu"
 print(f"🖥️  Using device: {device}")
 
 # Paths - MODIFICAR SEGÚN TUS NECESIDADES
-ckpt = "/Users/thomasmolinamolina/Downloads/UNAL/MATERIAS/SEMESTRE 6/PALUZNY/Checkpoints/sam_vit_b_01ec64.pth"
-data_dir = "/Users/thomasmolinamolina/Downloads/UNAL/MATERIAS/SEMESTRE 6/PALUZNY/DATA/D1/pngs"  # Carpeta con JPG o PNG
-output_dir = "/Users/thomasmolinamolina/Downloads/UNAL/MATERIAS/SEMESTRE 6/PALUZNY/DATA/D1_propagation_results"
+ckpt = "/Checkpoints/sam_vit_b_01ec64.pth" # Ruta al checkpoint de SAM 
+data_dir = "DATA/D1/pngs"  # Carpeta con JPG o PNG
+output_dir = "/D1_propagation_results" #carpeta de resultados
 
 
 
