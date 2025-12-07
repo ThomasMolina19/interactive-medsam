@@ -3,7 +3,7 @@
 import os
 import sys
 import tkinter as tk
-from tkinter import filedialog, messagebox
+from tkinter import filedialog
 
 
 def _cancel_exit(root, item):
@@ -61,20 +61,5 @@ def get_user_paths():
     print(f"   • Salida:     {output_dir}")
     print("="*70)
     
-    # Diálogo de confirmación
-    confirm = messagebox.askyesno(
-        "Confirmar configuración",
-        f"¿Confirmar la siguiente configuración?\n\n"
-        f"• Checkpoint:\n  {ckpt}\n\n"
-        f"• Imágenes:\n  {data_dir}\n\n"
-        f"• Salida:\n  {output_dir}"
-    )
-    
     root.destroy()
-    
-    if not confirm:
-        print("❌ Cancelado por el usuario.")
-        sys.exit(1)
-    
-    print("\n✅ Configuración confirmada!")
     return ckpt, data_dir, output_dir

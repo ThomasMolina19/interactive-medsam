@@ -7,18 +7,31 @@ from segment_anything import sam_model_registry, SamPredictor
 class SAMModel:
     """Wrapper para el modelo SAM con predicción simplificada."""
     
-    def __init__(self, checkpoint_path: str, model_type: str = "vit_b"):
+    def __init__(self, checkpoint_path: str, model_type: str = None, force_cpu: bool = False):
         """
         Inicializa el modelo SAM.
         
         Args:
             checkpoint_path: Ruta al archivo .pth del checkpoint
-            model_type: Tipo de modelo SAM ('vit_b', 'vit_l', 'vit_h')
+            model_type: Tipo de modelo SAM ('vit_b', 'vit_l', 'vit_h'). 
+                        Si es None, se detecta automáticamente del nombre del archivo.
+            force_cpu: Forzar uso de CPU (útil para modelos grandes en MPS)
         """
-        self.device = self._get_device()
-        print(f"\n🖥️  Using device: {self.device}")
+        # Detectar tipo de modelo automáticamente si no se especifica
+        if model_type is None:
+            model_type = self._detect_model_type(checkpoint_path)
         
-        print("🔄 Loading SAM model...")
+        # Para modelos grandes, usar CPU en Mac para evitar crashes de MPS
+        if model_type in ['vit_l', 'vit_h'] and not force_cpu:
+            print(f"\n⚠️  Modelo grande ({model_type}) detectado. Usando CPU para estabilidad.")
+            self.device = "cpu"
+        elif force_cpu:
+            self.device = "cpu"
+        else:
+            self.device = self._get_device()
+        
+        print(f"🖥️  Using device: {self.device}")
+        print(f"🔄 Loading SAM model ({model_type})...")
         
         # Cargar checkpoint con map_location para compatibilidad CPU/MPS/CUDA
         state_dict = torch.load(checkpoint_path, map_location=self.device, weights_only=True)
@@ -30,6 +43,22 @@ class SAMModel:
         
         self.predictor = SamPredictor(sam)
         print("✅ SAM model loaded!")
+    
+    @staticmethod
+    def _detect_model_type(checkpoint_path: str) -> str:
+        """Detecta el tipo de modelo SAM desde el nombre del archivo."""
+        path_lower = checkpoint_path.lower()
+        
+        if 'vit_h' in path_lower or 'vith' in path_lower:
+            return 'vit_h'
+        elif 'vit_l' in path_lower or 'vitl' in path_lower:
+            return 'vit_l'
+        elif 'vit_b' in path_lower or 'vitb' in path_lower:
+            return 'vit_b'
+        else:
+            # Default a vit_b si no se puede detectar
+            print("⚠️  No se pudo detectar tipo de modelo, usando vit_b por defecto")
+            return 'vit_b'
     
     @staticmethod
     def _get_device():
