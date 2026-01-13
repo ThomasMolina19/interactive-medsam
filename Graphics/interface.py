@@ -1,45 +1,10 @@
-import sys
-sys.path.append('path/to/segment-anything')
 import numpy as np
-from PIL import Image
 import matplotlib.pyplot as plt
-import torch
-from segment_anything import sam_model_registry, SamPredictor
-from scipy import ndimage
-from skimage import morphology
-import cv2
 
-
-device = "mps" if torch.backends.mps.is_available() else "cpu"
-
-
-
-# Here goes the path to your SAM model checkpoint
-ckpt = "/Users/thomasmolinamolina/Downloads/UNAL/MATERIAS/SEMESTRE 6/PALUZNY/Checkpoints/sam_vit_h_4b8939.pth"
-
-# Load model
-sam = sam_model_registry["vit_h"](checkpoint=ckpt)
-sam = sam.to(device)
-predictor = SamPredictor(sam)
-
-# Here goes the path to your medical image
-img = np.array(Image.open("/Users/thomasmolinamolina/Downloads/UNAL/MATERIAS/SEMESTRE 6/PALUZNY/DATA/D2/pngs/IM-0008-0011.png").convert("RGB"))
-
-# Enhance contrast for medical images
-img_enhanced = cv2.convertScaleAbs(img, alpha=1.2, beta=10)
-
-predictor.set_image(img_enhanced)
-
-H, W = img.shape[:2]
-
-def interactive_point_selector(img, predictor):
+def interactive_sam_point_selector(img, predictor, filename):
     """
     Interactive point selection for SAM segmentation with REAL-TIME preview.
-    - Click derecho (botón derecho): Punto POSITIVO (sí es el objeto)
-    - Click izquierdo (botón izquierdo): Punto NEGATIVO (omitir este contorno)
-    - Tecla 'z': DESHACER último punto
-    - Tecla 'c': LIMPIAR todos los puntos
-    - Presiona ENTER o cierra la ventana cuando termines
+    Modified for batch processing with filename display.
     """
     
     class PointSelector:
@@ -50,6 +15,7 @@ def interactive_point_selector(img, predictor):
             self.ax_mask = ax_mask
             self.point_markers = []
             self.mask_display = None
+            self.current_mask = None
             
         def update_segmentation(self):
             """Update segmentation in real-time"""
@@ -91,6 +57,7 @@ def interactive_point_selector(img, predictor):
                 )
                 
                 best_mask = masks[np.argmax(scores)]
+                self.current_mask = best_mask
                 
                 # Display mask on right subplot
                 self.ax_mask.clear()
@@ -136,7 +103,7 @@ def interactive_point_selector(img, predictor):
                 print(f"✅ Punto POSITIVO agregado: ({x:.0f}, {y:.0f})")
             
             # Update title with counts
-            self.ax_img.set_title(f"✅ Positivos: {len(self.positive_points)} | ❌ Negativos: {len(self.negative_points)} | 'z': deshacer | 'c': limpiar")
+            self.ax_img.set_title(f"✅ Positivos: {len(self.positive_points)} | ❌ Negativos: {len(self.negative_points)} | 'z': deshacer | 'c': limpiar | 's': skip")
             
             # Update segmentation in real-time
             self.update_segmentation()
@@ -156,7 +123,7 @@ def interactive_point_selector(img, predictor):
                         removed = self.negative_points.pop()
                         print(f"↩️  Deshecho punto NEGATIVO: ({removed[0]:.0f}, {removed[1]:.0f})")
                     
-                    self.ax_img.set_title(f"✅ Positivos: {len(self.positive_points)} | ❌ Negativos: {len(self.negative_points)} | 'z': deshacer | 'c': limpiar")
+                    self.ax_img.set_title(f"✅ Positivos: {len(self.positive_points)} | ❌ Negativos: {len(self.negative_points)} | 'z': deshacer | 'c': limpiar | 's': skip")
                     self.update_segmentation()
             
             # C = Clear all points
@@ -167,15 +134,20 @@ def interactive_point_selector(img, predictor):
                 self.positive_points.clear()
                 self.negative_points.clear()
                 print("🧹 Todos los puntos limpiados")
-                self.ax_img.set_title(f"✅ Positivos: 0 | ❌ Negativos: 0 | 'z': deshacer | 'c': limpiar")
+                self.ax_img.set_title(f"✅ Positivos: 0 | ❌ Negativos: 0 | 'z': deshacer | 'c': limpiar | 's': skip")
                 self.update_segmentation()
+            
+            # S = Skip this image
+            elif event.key == 's':
+                print(f"⏭️ Saltando imagen: {filename}")
+                plt.close(fig)
     
     # Create the selector object with 2 subplots
     fig, (ax_img, ax_mask) = plt.subplots(1, 2, figsize=(20, 8))
     
     # Left: Image with points
     ax_img.imshow(img)
-    ax_img.set_title("🎯 Imagen Original | Click derecho = POSITIVO | Click izquierdo = NEGATIVO")
+    ax_img.set_title(f"🎯 {filename} | Click derecho = POSITIVO | Click izquierdo = NEGATIVO")
     ax_img.axis('off')
     
     # Right: Real-time mask
@@ -191,7 +163,7 @@ def interactive_point_selector(img, predictor):
     
     # Instructions
     plt.figtext(0.5, 0.02, 
-                "🟢 Click DERECHO: Punto positivo | 🔴 Click IZQUIERDO: Punto negativo | ⌨️ 'z': Deshacer | 'c': Limpiar | ENTER/ESC: Terminar", 
+                "🟢 Click DERECHO: Punto positivo | 🔴 Click IZQUIERDO: Punto negativo | ⌨️ 'z': Deshacer | 'c': Limpiar | 's': Saltar | ENTER/ESC: Siguiente", 
                 ha='center', fontsize=11, weight='bold',
                 bbox=dict(boxstyle="round,pad=0.5", facecolor="lightblue", edgecolor="blue", linewidth=2))
     
@@ -199,129 +171,3 @@ def interactive_point_selector(img, predictor):
     plt.show()
     
     return selector_obj.positive_points, selector_obj.negative_points
-
-# Use the interactive point selector
-print("🎯 Selección de puntos iniciando...")
-print("   - Click DERECHO: Marca puntos POSITIVOS (objeto de interés)")
-print("   - Click IZQUIERDO: Marca puntos NEGATIVOS (para omitir contornos)")
-print("   - Tecla 'z': Deshacer último punto")
-print("   - Tecla 'c': Limpiar todos los puntos")
-positive_points, negative_points = interactive_point_selector(img, predictor)
-
-# Prepare points and labels for SAM
-input_points = []
-input_labels = []
-
-# Add positive points (label = 1)
-for point in positive_points:
-    input_points.append(point)
-    input_labels.append(1)
-
-# Add negative points (label = 0)
-for point in negative_points:
-    input_points.append(point)
-    input_labels.append(0)
-
-if len(input_points) == 0:
-    print("⚠️ No se seleccionaron puntos. Saliendo...")
-    sys.exit(0)
-
-input_points = np.array(input_points)
-input_labels = np.array(input_labels)
-
-print(f"✅ Total de puntos: {len(input_points)}")
-print(f"   - Positivos: {len(positive_points)}")
-print(f"   - Negativos: {len(negative_points)}")
-
-# Generate masks using the selected points
-masks, scores, _ = predictor.predict(
-    point_coords=input_points,
-    point_labels=input_labels,
-    multimask_output=True
-)
-
-# Select best mask
-best_mask = masks[np.argmax(scores)]
-
-# Post-process mask
-def refine_medical_mask(mask):
-    """Clean up the segmentation mask for medical images"""
-    # Remove small objects
-    mask_clean = morphology.remove_small_objects(mask, min_size=500)
-    
-    # Fill holes
-    mask_filled = ndimage.binary_fill_holes(mask_clean)
-    
-    # Smooth with morphological operations
-    kernel = morphology.disk(2)
-    mask_smooth = morphology.binary_opening(mask_filled, kernel)
-    mask_smooth = morphology.binary_closing(mask_smooth, kernel)
-    
-    return mask_smooth
-
-refined_mask = refine_medical_mask(best_mask)
-
-# Enhanced visualization
-fig, axes = plt.subplots(2, 3, figsize=(18, 12))
-
-# Row 1: Original results
-axes[0,0].imshow(img)
-axes[0,0].set_title("Original Image")
-axes[0,0].axis('off')
-
-axes[0,1].imshow(img)
-axes[0,1].imshow(best_mask, alpha=0.5, cmap='Reds')
-# Show selected points
-for point in positive_points:
-    axes[0,1].plot(point[0], point[1], 'g*', markersize=15, markeredgewidth=2)
-for point in negative_points:
-    axes[0,1].plot(point[0], point[1], 'rx', markersize=12, markeredgewidth=3)
-axes[0,1].set_title("Raw SAM Output with Points")
-axes[0,1].axis('off')
-
-axes[0,2].imshow(best_mask, cmap='gray')
-axes[0,2].set_title("Raw Mask")
-axes[0,2].axis('off')
-
-# Row 2: Enhanced results
-axes[1,0].imshow(img_enhanced)
-axes[1,0].set_title("Enhanced Image")
-axes[1,0].axis('off')
-
-axes[1,1].imshow(img)
-axes[1,1].imshow(refined_mask, alpha=0.5, cmap='Blues')
-# Show selected points on refined view too
-for point in positive_points:
-    axes[1,1].plot(point[0], point[1], 'g*', markersize=15, markeredgewidth=2)
-for point in negative_points:
-    axes[1,1].plot(point[0], point[1], 'rx', markersize=12, markeredgewidth=3)
-axes[1,1].set_title("Refined Segmentation")
-axes[1,1].axis('off')
-
-axes[1,2].imshow(refined_mask, cmap='gray')
-axes[1,2].set_title("Refined Mask")
-axes[1,2].axis('off')
-
-plt.tight_layout()
-plt.show()
-
-# Results summary
-print(f"\n{'='*50}")
-print(f"🎯 Segmentation completed on {device}")
-print(f"🟢 Puntos positivos: {len(positive_points)}")
-print(f"🔴 Puntos negativos: {len(negative_points)}")
-print(f"📏 Mask area: {np.sum(refined_mask)} pixels")
-print(f"⭐ Best mask score: {scores[np.argmax(scores)]:.4f}")
-print(f"🎭 Total masks generated: {len(masks)}")
-print(f"{'='*50}")
-
-# Create output directory
-import os
-output_dir = "segmentation_results"
-os.makedirs(output_dir, exist_ok=True)
-
-# Save results if needed
-refined_mask_pil = Image.fromarray((refined_mask * 255).astype(np.uint8))
-output_path = os.path.join(output_dir, "segmentation_result_points.png")
-refined_mask_pil.save(output_path)
-print(f"💾 Mask saved as '{output_path}'")

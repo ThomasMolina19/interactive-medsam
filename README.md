@@ -27,12 +27,13 @@ pip install git+https://github.com/facebookresearch/segment-anything.git
 
 # 3. Descargar checkpoints (ver sección de instalación)
 mkdir Checkpoints
-# Descargar sam_vit_h_4b8939.pth o medsam_vit_b.pth
+# Descargar sam_vit_b_01ec64.pth (recomendado) o sam_vit_h_4b8939.pth
 
-# 4. Ejecutar segmentación interactiva
-python segment_sam_points.py        # SAM con puntos
-python segment_medsam_points.py     # MedSAM con puntos (recomendado)
-python segment_one_medsam.py        # MedSAM con bounding box
+# 4. Ejecutar segmentación
+python segment_sam_propagation.py   # 🔄 Propagación en volúmenes CT (NUEVO)
+python segment_sam_points.py        # ⭐ SAM con puntos (imagen individual)
+python segment_medsam_points.py     # 🏥 MedSAM con puntos
+python segment_one_medsam.py        # 📦 MedSAM con bounding box
 ```
 
 ## 🔧 Requisitos
@@ -195,11 +196,84 @@ interactive-medsam/
 
 ## 🚀 Uso
 
-### Opción 1: SAM con Puntos Interactivos (Tiempo Real) ⭐
+### Opción 1: Propagación Automática en Volúmenes CT 🔄 (NUEVO)
+
+**Script:** `segment_sam_propagation.py`
+
+Segmentación automática de volúmenes completos CT/MRI con propagación bidireccional desde la slice central.
+
+#### Características:
+- **Entrada**: Carpeta con imágenes PNG/JPG ordenadas (un volumen CT)
+- **Proceso**: Usuario clickea UNA vez en la slice central → propaga a todas las demás
+- **Modelo**: SAM ViT-B
+- **Salida**: Máscaras, overlays, reconstrucción 3D, y resumen estadístico
+
+#### Paso 1: Configurar rutas
+
+Edita el archivo `segment_sam_propagation.py` (líneas 35-37):
+
+```python
+# Ruta al checkpoint de SAM
+ckpt = "Checkpoints/sam_vit_b_01ec64.pth"
+
+# Carpeta con las imágenes PNG del volumen
+data_dir = "DATA/D1/pngs"
+
+# Carpeta donde se guardarán los resultados
+output_dir = "DATA/D1_propagation_results"
+```
+
+#### Paso 2: Configurar umbrales (opcional)
+
+```python
+# Líneas 42-43
+SIMILARITY_THRESHOLD = 0.35  # Diferencia para advertencia leve
+WARNING_THRESHOLD = 0.45     # Diferencia para marcar como fallida
+```
+
+#### Paso 3: Ejecutar
+
+```bash
+python segment_sam_propagation.py
+```
+
+#### Paso 4: Interacción
+
+1. Se abre una ventana con la **slice central** del volumen
+2. **Click derecho**: Agregar punto positivo en el objeto (ej: húmero)
+3. **Click izquierdo**: Agregar punto negativo para excluir regiones
+4. **Tecla 'z'**: Deshacer último punto
+5. **Tecla 'c'**: Limpiar todos los puntos
+6. **Cerrar ventana**: Iniciar propagación automática
+
+#### Salida:
+
+```
+DATA/D1_propagation_results/
+├── I01_seg.png              # Overlay de cada slice
+├── I01_mask.png             # Máscara binaria
+├── I01_points.npy           # Puntos utilizados
+├── ...
+├── reconstruction_3d_isometrica.png   # Vista 3D
+├── reconstruction_3d_frontal.png
+├── reconstruction_3d_lateral.png
+├── propagation_summary.txt  # Estadísticas (Dice, éxito, fallos)
+└── all_points.csv           # Coordenadas de centroides
+```
+
+#### Métricas generadas:
+- **Dice coefficient**: Similitud entre slices consecutivas
+- **IoU**: Intersection over Union
+- **Tasa de éxito**: % de slices segmentadas correctamente
+- **Lista de fallos**: Slices que superaron el umbral de diferencia
+
+---
+
+### Opción 2: SAM con Puntos Interactivos (Imagen Individual) ⭐
 
 **Script:** `segment_sam_points.py`
 
-La forma más interactiva e intuitiva con retroalimentación en tiempo real.
+La forma más interactiva e intuitiva con retroalimentación en tiempo real para **una sola imagen**.
 
 #### Características:
 - Modelo: SAM ViT-H (generalista)
@@ -340,17 +414,17 @@ python segment_one_medsam.py
 
 ## 📊 Comparación de Scripts
 
-| Característica | `segment_sam_points.py` | `segment_medsam_points.py` | `segment_one_medsam.py` |
-|----------------|-------------------------|----------------------------|-------------------------|
-| **Modelo** | SAM ViT-H | MedSAM ViT-B | MedSAM ViT-B |
-| **Entrada** | Puntos interactivos | Puntos interactivos | Bounding box |
-| **Mejora** | Contraste OpenCV | CLAHE | Contraste OpenCV |
-| **Vista previa** | ✅ Tiempo real | ✅ Tiempo real | ❌ Solo final |
-| **Carga robusta** | ❌ | ✅ strict=False | ✅ |
-| **DICOM windowing** | ❌ | ✅ Opcional | ❌ |
-| **Métricas físicas** | ❌ | ✅ mm² con spacing | ❌ |
-| **Mejor para** | Imágenes generales | Imágenes médicas | Segmentación rápida |
-| **multimask_output** | True (3 máscaras) | False (1 máscara) | True (3 máscaras) |
+| Característica | `segment_sam_propagation.py` | `segment_sam_points.py` | `segment_medsam_points.py` | `segment_one_medsam.py` |
+|----------------|------------------------------|-------------------------|----------------------------|-------------------------|
+| **Modelo** | SAM ViT-B | SAM ViT-H | MedSAM ViT-B | MedSAM ViT-B |
+| **Entrada** | Carpeta de imágenes | Imagen individual | Imagen individual | Imagen individual |
+| **Método** | Propagación automática | Puntos interactivos | Puntos interactivos | Bounding box |
+| **Interacciones** | 1 (solo slice central) | N puntos por imagen | N puntos por imagen | 1 caja |
+| **Salida** | Volumen completo + 3D | 1 máscara | 1 máscara | 1 máscara |
+| **Métricas** | Dice, IoU, estadísticas | Área, score | Área en mm² | Área, score |
+| **Vista previa** | ✅ Tiempo real | ✅ Tiempo real | ✅ Tiempo real | ❌ Solo final |
+| **Reconstrucción 3D** | ✅ | ❌ | ❌ | ❌ |
+| **Mejor para** | Volúmenes CT/MRI | Imagen individual | Imágenes médicas | Segmentación rápida |
 
 ## 📊 Output
 
@@ -451,19 +525,20 @@ print("💾 Mask saved as 'segmentation_result.png'")
 medsam-unal-project/
 ├── Checkpoints/
 │   ├── sam_vit_h_4b8939.pth       # SAM ViT-Huge checkpoint (~2.4 GB)
-│   ├── sam_vit_b_01ec64.pth       # SAM ViT-Base checkpoint (~375 MB)
+│   ├── sam_vit_b_01ec64.pth       # SAM ViT-Base checkpoint (~375 MB) ← Recomendado
 │   └── medsam_vit_b.pth           # MedSAM ViT-B checkpoint (~2.4 GB)
-├── DATA/                           # Carpeta de datos (imágenes DICOM/PNG)
-│   └── Data/
-│       └── HumeroData/
-│           └── IM-0008-0016.dcm
-├── segment_sam_points.py           # ⭐ SAM con puntos (tiempo real)
+├── DATA/                           # Carpeta de datos
+│   ├── D1/pngs/                   # Volumen 1 (imágenes PNG)
+│   ├── D2/pngs/                   # Volumen 2
+│   ├── ...
+│   ├── D1_propagation_results/    # Resultados de propagación
+│   └── D2_propagation_results/
+├── segment_sam_propagation.py      # 🔄 Propagación en volúmenes CT (NUEVO)
+├── segment_sam_points.py           # ⭐ SAM con puntos (imagen individual)
 ├── segment_medsam_points.py        # 🏥 MedSAM con puntos (robusto)
 ├── segment_one_medsam.py           # 📦 MedSAM con bounding box
 ├── requirements.txt                # Dependencias de Python
-├── README.md                       # Este archivo
-└── Latex/                          # (Opcional) Documentación LaTeX
-    └── informe_entrega1.tex
+└── README.md                       # Este archivo
 ```
 
 ## 🔍 Funciones Clave
@@ -534,22 +609,31 @@ Pipeline de postprocesamiento para refinamiento de máscaras.
 
 ## 🆕 Características del Proyecto
 
-### Scripts Disponibles (3 Herramientas)
+### Scripts Disponibles (4 Herramientas)
 
-1. **`segment_sam_points.py`** - SAM Generalista
-   - Segmentación con puntos interactivos
+1. **`segment_sam_propagation.py`** - 🔄 Propagación en Volúmenes (NUEVO)
+   - Segmentación automática de volúmenes CT/MRI completos
+   - Usuario clickea UNA vez → propaga a todas las slices
+   - Propagación bidireccional desde slice central
+   - Detección automática de fallos (umbral configurable)
+   - Reconstrucción 3D automática
+   - Métricas: Dice, IoU, tasa de éxito
+   - Genera resumen estadístico en `propagation_summary.txt`
+
+2. **`segment_sam_points.py`** - ⭐ SAM Generalista
+   - Segmentación con puntos interactivos (imagen individual)
    - Vista previa en tiempo real
    - Modelo SAM ViT-H
    - Contraste simple con OpenCV
 
-2. **`segment_medsam_points.py`** - MedSAM Profesional
+3. **`segment_medsam_points.py`** - 🏥 MedSAM Profesional
    - Segmentación con puntos (versión robusta)
    - CLAHE para mejora adaptativa
    - Carga de checkpoint tolerante a errores
    - Soporte opcional para windowing DICOM
    - Métricas físicas (mm²) con pixel spacing
 
-3. **`segment_one_medsam.py`** - Bounding Box Rápido
+4. **`segment_one_medsam.py`** - 📦 Bounding Box Rápido
    - Segmentación con caja rectangular
    - Interfaz de arrastrar y soltar
    - Redimensionable e interactivo
@@ -634,7 +718,7 @@ Ajusta los parámetros:
 - **OpenCV**: `alpha=1.0, beta=0` (sin cambios)
 - **CLAHE**: `clip_limit=1.0` (menos agresivo) o `clip_limit=3.0` (más agresivo)
 
-## 👥 Autores
+## 👥 Autor
 
 **Thomas Molina Molina**  
 Universidad Nacional de Colombia
