@@ -23,6 +23,8 @@ from Graphics.grafication import (
     extract_contour_points_3d,
     plot_3d_contours,
     plot_3d_contours_by_slice,
+    plot_3d_solid_mesh,
+    export_mesh_to_stl,
 )
 import Segmentation.Masks as Masks
 from Segmentation.propagation import propagate_segmentation
@@ -34,14 +36,14 @@ print(f"🖥️  Using device: {device}")
 
 # Paths - MODIFICAR SEGÚN TUS NECESIDADES
 ckpt = "/Users/thomasmolinamolina/Downloads/TopicosGeo/Checkpoints/sam_vit_b_01ec64.pth" # Ruta al checkpoint de SAM 
-data_dir = "/Users/thomasmolinamolina/Downloads/TopicosGeo/DATA/D9/pngs"  # Carpeta con JPG o PNG
-output_dir = "/Users/thomasmolinamolina/Downloads/TopicosGeo/DATA/D9_propagation_results" #carpeta de resultados
+data_dir = "/Users/thomasmolinamolina/Downloads/TopicosGeo/DATA/D5/pngs"  # Carpeta con JPG o PNG
+output_dir = "/Users/thomasmolinamolina/Downloads/TopicosGeo/DATA/D5_propagation_results" #carpeta de resultados
 
 
 
 # Parámetros
-SIMILARITY_THRESHOLD = 0.35  # 20% - Solo para advertencias, NO detiene la propagación
-WARNING_THRESHOLD = 0.45     # 30% - Advertencia severa pero continúa
+SIMILARITY_THRESHOLD = 0.25  # 20% - Solo para advertencias, NO detiene la propagación
+WARNING_THRESHOLD = 0.35     # 30% - Advertencia severa pero continúa
 
 # Create output directory
 os.makedirs(output_dir, exist_ok=True)
@@ -184,13 +186,42 @@ def main():
         np.savetxt(csv_path, points_3d, delimiter=',', header='x,y,z', comments='')
         print(f"💾 CSV guardado en: {csv_path}")
         
-        # Visualización 3D - Nube de puntos
+        # Visualización 3D - Nube de puntos (guardar imágenes)
         print("\n🎨 Generando visualización 3D (nube de puntos)...")
         plot_3d_contours(points_3d, output_dir, title=f"Reconstrucción 3D - {len(segmentations)} slices")
         
-        # Visualización 3D - Contornos por slice
+        # Visualización 3D - Contornos por slice (guardar imágenes)
         print("\n🎨 Generando visualización 3D (contornos por slice)...")
         plot_3d_contours_by_slice(segmentations, files, middle_idx, output_dir, z_spacing=z_spacing)
+        
+        # Visualización 3D - Malla sólida (guardar imágenes)
+        print("\n🔨 Generando malla sólida 3D...")
+        triangles = plot_3d_solid_mesh(
+            segmentations, files, middle_idx, output_dir,
+            z_spacing=z_spacing,
+            num_points_per_contour=100,
+            color='skyblue',
+            alpha=0.7,
+            interactive=False,
+            with_caps=True
+        )
+        
+        # Exportar a STL para impresión 3D o software CAD
+        if triangles:
+            stl_path = os.path.join(output_dir, "modelo_3d.stl")
+            export_mesh_to_stl(triangles, stl_path)
+        
+        # Mostrar visualización interactiva de malla sólida
+        print("\n🖱️  Abriendo malla sólida 3D interactiva...")
+        plot_3d_solid_mesh(
+            segmentations, files, middle_idx, output_dir,
+            z_spacing=z_spacing,
+            num_points_per_contour=100,
+            color='skyblue',
+            alpha=0.7,
+            interactive=True,
+            with_caps=True
+        )
     else:
         print("⚠️ No hay puntos 3D para visualizar")
     

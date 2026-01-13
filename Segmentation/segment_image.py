@@ -213,14 +213,4 @@ def segment_first_image(predictor, img, filename):
     print(f"🎭 Total masks generated: {len(masks)}")
     print(f"{'='*50}")
 
-    # Save results
-    import os
-    output_dir = "segmentation_results"
-    os.makedirs(output_dir, exist_ok=True)
-
-    refined_mask_pil = Image.fromarray((refined_mask * 255).astype(np.uint8))
-    output_path = os.path.join(output_dir, "segmentation_result_points.png")
-    refined_mask_pil.save(output_path)
-    print(f"💾 Mask saved as '{output_path}'")
-
     return refined_mask, best_score

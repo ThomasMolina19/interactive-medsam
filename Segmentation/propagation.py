@@ -1,9 +1,11 @@
 import os
 import numpy as np
 from Segmentation import Masks
-from Segmentation.segment_image import segment_with_point
+from Segmentation.segment_image import segment_with_point, segment_image
 from DCM.load_dicom_as_image import read_image_file
 import Segmentation.Metrics as Metrics
+from Segmentation.negative_points import calculate_negative_point
+import cv2
 
 SIMILARITY_THRESHOLD = 0.35  # 30% diferencia aceptable
 WARNING_THRESHOLD = 0.45    # 50% diferencia para saltar imagen
@@ -105,10 +107,51 @@ def propagate_segmentation(predictor, files, start_idx, start_mask, start_center
         
         print(f"    📊 Dice: {dice:.3f}, IoU: {iou:.3f}, Diferencia: {difference*100:.1f}%")
         
-        # Si la diferencia es mayor al umbral severo, SALTAR esta imagen
+        # Si la diferencia es mayor al umbral severo, intentar con punto negativo
         if difference > WARNING_THRESHOLD:
-            print(f"    🚨 DIFERENCIA > {WARNING_THRESHOLD*100:.0f}% - SALTANDO IMAGEN")
-            print(f"    ⏭️ Agregando a lista de fallidas. Continuando con centro de imagen {last_successful_idx+1}")
+            print(f"    ⚠️ Diferencia alta ({difference*100:.1f}%). Intentando con punto negativo...")
+            
+            # Calcular punto negativo basado en la máscara de referencia
+            neg_point = calculate_negative_point(reference_mask, reference_center, distance_factor=0.30)
+            
+            if neg_point is not None:
+                print(f"    🔵 Punto negativo calculado: ({neg_point[0]:.0f}, {neg_point[1]:.0f})")
+                
+                # Preparar puntos y etiquetas
+                input_points = np.array([reference_center, neg_point])
+                input_labels = np.array([1, 0])  # 1=positivo, 0=negativo
+                
+                # Mejorar contraste y segmentar con ambos puntos
+                img_enhanced = cv2.convertScaleAbs(next_img, alpha=1.2, beta=10)
+                predictor.set_image(img_enhanced)
+                
+                try:
+                    new_mask, _, new_score, _ = segment_image(predictor, input_points, input_labels, refine=True)
+                    
+                    if new_mask is not None and np.sum(new_mask) > 0:
+                        # Calcular nuevo dice
+                        new_dice = Metrics.calculate_dice_coefficient(reference_mask, new_mask)
+                        new_difference = 1.0 - new_dice
+                        
+                        print(f"    📊 Con punto negativo - Dice: {new_dice:.3f}, Diferencia: {new_difference*100:.1f}%")
+                        
+                        # Si mejoró o está dentro del umbral, usar esta segmentación
+                        if new_difference <= WARNING_THRESHOLD or new_dice > dice:
+                            print(f"    ✅ Punto negativo mejoró la segmentación!")
+                            next_mask = new_mask
+                            next_score = new_score
+                            dice = new_dice
+                            iou = Metrics.calculate_iou(reference_mask, new_mask)
+                            difference = new_difference
+                        else:
+                            print(f"    ❌ Punto negativo no mejoró suficiente")
+                except Exception as e:
+                    print(f"    ⚠️ Error con punto negativo: {e}")
+            else:
+                print(f"    ⚠️ No se pudo calcular punto negativo")
+        
+        # Si aún la diferencia es mayor al umbral, SALTAR esta imagen
+        if difference > WARNING_THRESHOLD:
             failed_slices.append({
                 'idx': next_idx,
                 'filename': os.path.basename(next_file),
