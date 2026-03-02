@@ -3,6 +3,7 @@ import numpy as np
 
 
 
+
 def calculate_negative_point(mask, center, distance_factor=0.30):
     """
     Calcula un punto negativo fuera de la máscara a una distancia del 30%.
@@ -74,3 +75,5 @@ def calculate_negative_point(mask, center, distance_factor=0.30):
                 return [neg_x, neg_y]
     
     return None
+
+

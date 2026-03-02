@@ -27,7 +27,7 @@ from Graphics.grafication import (
     export_mesh_to_stl,
 )
 import Segmentation.Masks as Masks
-from Segmentation.propagation import propagate_segmentation
+from Segmentation.propagation import propagate_segmentation, postprocess_low_dice
 from Segmentation.segment_image import segment_first_image
 
 
@@ -36,14 +36,13 @@ print(f"🖥️  Using device: {device}")
 
 # Paths - MODIFICAR SEGÚN TUS NECESIDADES
 ckpt = "/Users/thomasmolinamolina/Downloads/TopicosGeo/Checkpoints/sam_vit_b_01ec64.pth" # Ruta al checkpoint de SAM 
-data_dir = "/Users/thomasmolinamolina/Downloads/TopicosGeo/DATA/D5/pngs"  # Carpeta con JPG o PNG
-output_dir = "/Users/thomasmolinamolina/Downloads/TopicosGeo/DATA/D5_propagation_results" #carpeta de resultados
+data_dir = "/Users/thomasmolinamolina/Downloads/TopicosGeo/DATA/D1/pngs"  # Carpeta con JPG o PNG
+output_dir = "/Users/thomasmolinamolina/Downloads/TopicosGeo/DATA/D1_propagation_results" #carpeta de resultados
 
 
 
-# Parámetros
-SIMILARITY_THRESHOLD = 0.25  # 20% - Solo para advertencias, NO detiene la propagación
-WARNING_THRESHOLD = 0.35     # 30% - Advertencia severa pero continúa
+SIMILARITY_THRESHOLD = 0.35  # 30% diferencia aceptable
+WARNING_THRESHOLD = 0.45    # 50% diferencia para saltar imagen
 
 # Create output directory
 os.makedirs(output_dir, exist_ok=True)
@@ -162,9 +161,19 @@ def main():
         segmentations, failed_slices, output_dir, direction="forward"
     )
     
-    # STEP 4: Reconstrucción 3D
+    # STEP 4: Post-procesamiento de segmentaciones con Dice bajo
     print("\n" + "="*70)
-    print("🎨 PASO 4: RECONSTRUCCIÓN 3D")
+    print("🔧 PASO 4: POST-PROCESAMIENTO (Dice < 80%)")
+    print("="*70)
+    print("Buscando segmentaciones con Dice bajo para re-segmentar imagen anterior...")
+    
+    segmentations = postprocess_low_dice(
+        predictor, files, segmentations, output_dir, dice_threshold=0.80
+    )
+    
+    # STEP 5: Reconstrucción 3D
+    print("\n" + "="*70)
+    print("🎨 PASO 5: RECONSTRUCCIÓN 3D")
     print("="*70)
     
     # Extraer puntos 3D de los contornos
